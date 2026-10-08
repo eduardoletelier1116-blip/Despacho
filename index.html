@@ -163,8 +163,6 @@
               <div class="pill"><input type="radio" id="observado" name="estadoDespacho" value="Observado" required><label for="observado">! Observado</label></div>
             </div>
           </div>
-          <div class="field full"><label for="observacionesEstado">Observaciones del estado</label><textarea id="observacionesEstado"></textarea></div>
-          <div class="field"><label for="responsable">Nombre responsable *</label><input id="responsable" required /></div>
         </div>
         <div id="status" class="status"></div>
       </section>
@@ -187,6 +185,11 @@
           </div>
         </div>
         <p class="upload-note">Toca cada cuadro para abrir directamente la cámara. Las 3 fotografías son obligatorias.</p>
+
+        <div class="field" style="margin-top:16px">
+          <label for="responsable">Nombre responsable *</label>
+          <input id="responsable" required />
+        </div>
 
         <div class="signature-wrap">
           <div class="signature-head">
@@ -525,7 +528,7 @@
       whatsappCliente: '',
       observacionesGenerales: val('observacionesGenerales'),
       estadoDespacho: estado,
-      observacionesEstado: val('observacionesEstado'),
+      observacionesEstado: '',
       responsable: val('responsable'),
       fechaResponsable: val('fechaResponsable'),
       checklist: obtenerChecklist(),
