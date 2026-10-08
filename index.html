@@ -36,6 +36,11 @@
     textarea{min-height:92px;resize:vertical}
     .muted{font-size:12px;color:var(--gris)}
     .dispatch-number{background:#eef5fb;border:1px dashed #8db3d4;padding:12px 14px;border-radius:10px;color:var(--azul);font-weight:800}
+    .current-dispatch{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;background:linear-gradient(135deg,#eaf3fb,#f8fbfe);border:1px solid #b8cfe2;border-radius:16px;padding:16px 18px;margin-bottom:18px;box-shadow:var(--sombra)}
+    .current-dispatch .eyebrow{font-size:12px;font-weight:800;color:var(--gris);text-transform:uppercase;letter-spacing:.8px}
+    .current-dispatch .number{font-size:clamp(25px,5vw,38px);font-weight:900;color:var(--azul);line-height:1.05;margin-top:3px}
+    .current-dispatch .date{text-align:right}
+    .current-dispatch .date strong{display:block;color:var(--azul);font-size:18px;margin-top:4px}
     .checklist{display:grid;gap:12px}
     .check-item{border:1px solid var(--borde);border-radius:14px;overflow:hidden;background:#fff}
     .check-head{display:flex;align-items:center;gap:10px;background:#f7f9fb;padding:12px 14px;border-bottom:1px solid var(--borde)}
@@ -72,6 +77,7 @@
       .wrap{margin-top:14px;padding:0 10px 90px}.card{padding:14px;border-radius:14px}
       .grid{grid-template-columns:1fr}.field.full{grid-column:auto}
       .check-body{grid-template-columns:1fr}.actions{justify-content:stretch}.actions button{flex:1}.secondary{display:none}
+      .current-dispatch{grid-template-columns:1fr}.current-dispatch .date{text-align:left}
     }
   </style>
 </head>
@@ -82,18 +88,24 @@
   </header>
 
   <main class="wrap">
+    <section class="current-dispatch" aria-live="polite">
+      <div>
+        <div class="eyebrow">N° de despacho en curso</div>
+        <div class="number" id="numeroActual">Cargando...</div>
+      </div>
+      <div class="date">
+        <div class="eyebrow">Fecha</div>
+        <strong id="fechaVisible">—</strong>
+      </div>
+    </section>
     <form id="despachoForm" novalidate>
       <section class="card">
         <h2>Datos del despacho</h2>
+        <input id="fechaDespacho" name="fechaDespacho" type="hidden" />
+        <input id="fechaResponsable" type="hidden" />
+        <input id="draftId" type="hidden" />
+        <input id="numeroDespacho" type="hidden" />
         <div class="grid">
-          <div class="field">
-            <label>N° de despacho</label>
-            <div class="dispatch-number">Se asignará automáticamente al guardar</div>
-          </div>
-          <div class="field">
-            <label for="fechaDespacho">Fecha de despacho *</label>
-            <input id="fechaDespacho" name="fechaDespacho" type="date" required />
-          </div>
           <div class="field"><label for="cliente">Cliente *</label><input id="cliente" required /></div>
           <div class="field"><label for="destino">Destino *</label><input id="destino" required /></div>
           <div class="field"><label for="transporte">Transporte *</label><input id="transporte" required /></div>
@@ -102,9 +114,8 @@
           <div class="field"><label for="etiquetaCajas">Etiqueta de cajas *</label><input id="etiquetaCajas" required /></div>
           <div class="field"><label for="cantidadCajas">Cantidad total de cajas *</label><input id="cantidadCajas" type="number" min="0" step="1" required /></div>
           <div class="field"><label for="numeroPallets">N° de pallets *</label><input id="numeroPallets" type="number" min="0" step="1" required /></div>
-          <div class="field"><label for="correoCliente">Correo cliente</label><input id="correoCliente" type="email" inputmode="email" /></div>
-          <div class="field"><label for="whatsappCliente">WhatsApp cliente</label><input id="whatsappCliente" type="tel" inputmode="tel" placeholder="Ej: +56912345678" /></div>
         </div>
+        <p class="muted" style="margin:12px 0 0">Correo y WhatsApp se solicitarán solo al finalizar, si se desea enviar el respaldo al cliente.</p>
       </section>
 
       <section class="card">
@@ -128,7 +139,6 @@
           </div>
           <div class="field full"><label for="observacionesEstado">Observaciones del estado</label><textarea id="observacionesEstado"></textarea></div>
           <div class="field"><label for="responsable">Nombre responsable *</label><input id="responsable" required /></div>
-          <div class="field"><label for="fechaResponsable">Fecha *</label><input id="fechaResponsable" type="date" required /></div>
         </div>
         <div id="status" class="status"></div>
       </section>
@@ -144,8 +154,9 @@
     <div class="modal-box">
       <div class="tick">✓</div>
       <h2 id="modalTitle">Despacho guardado</h2>
-      <p>El correlativo asignado es:</p>
+      <p>Despacho finalizado correctamente:</p>
       <div class="dispatch-result" id="numeroResultado">—</div>
+      <p class="muted">En la siguiente etapa agregaremos aquí el envío por WhatsApp y correo, sin pedir esos datos durante el llenado.</p>
       <button class="primary" id="nuevoBtn" type="button">Nuevo despacho</button>
     </div>
   </div>
@@ -178,8 +189,48 @@
     return `${y}-${m}-${day}`;
   }
 
-  document.getElementById('fechaDespacho').value = hoyISO();
-  document.getElementById('fechaResponsable').value = hoyISO();
+  function fechaCL(iso){
+    const [y,m,d] = iso.split('-');
+    return `${d}/${m}/${y}`;
+  }
+
+  function setFechasAutomaticas(){
+    const hoy = hoyISO();
+    document.getElementById('fechaDespacho').value = hoy;
+    document.getElementById('fechaResponsable').value = hoy;
+    document.getElementById('fechaVisible').textContent = fechaCL(hoy);
+  }
+
+  async function crearBorrador(){
+    const guardado = JSON.parse(localStorage.getItem('despachoBorrador') || 'null');
+    if (guardado?.id && guardado?.numeroDespacho) {
+      document.getElementById('draftId').value = guardado.id;
+      document.getElementById('numeroDespacho').value = guardado.numeroDespacho;
+      document.getElementById('numeroActual').textContent = guardado.numeroDespacho;
+      return;
+    }
+    document.getElementById('numeroActual').textContent = 'Reservando...';
+    try {
+      const resp = await fetch(API_URL, {
+        method:'POST',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify({accion:'crearBorrador'}),
+        redirect:'follow'
+      });
+      const json = JSON.parse(await resp.text());
+      if (!json.ok) throw new Error(json.mensaje || 'No se pudo reservar el correlativo.');
+      document.getElementById('draftId').value = json.id;
+      document.getElementById('numeroDespacho').value = json.numeroDespacho;
+      document.getElementById('numeroActual').textContent = json.numeroDespacho;
+      localStorage.setItem('despachoBorrador', JSON.stringify({id:json.id, numeroDespacho:json.numeroDespacho}));
+    } catch(err) {
+      document.getElementById('numeroActual').textContent = 'Sin número';
+      showStatus('error', `No fue posible obtener el N° de despacho: ${err.message}`);
+    }
+  }
+
+  setFechasAutomaticas();
+  crearBorrador();
 
   ITEMS.forEach((item, i) => {
     const n = i + 1;
@@ -237,6 +288,8 @@
     const estado = document.querySelector('input[name="estadoDespacho"]:checked')?.value || '';
     const data = {
       accion: 'nuevoDespacho',
+      id: val('draftId'),
+      numeroDespacho: val('numeroDespacho'),
       fechaDespacho: val('fechaDespacho'),
       cliente: val('cliente'),
       destino: val('destino'),
@@ -246,8 +299,8 @@
       etiquetaCajas: val('etiquetaCajas'),
       cantidadCajas: Number(val('cantidadCajas')),
       numeroPallets: Number(val('numeroPallets')),
-      correoCliente: val('correoCliente'),
-      whatsappCliente: val('whatsappCliente'),
+      correoCliente: '',
+      whatsappCliente: '',
       observacionesGenerales: val('observacionesGenerales'),
       estadoDespacho: estado,
       observacionesEstado: val('observacionesEstado'),
@@ -273,7 +326,8 @@
 
       if (!json.ok) throw new Error(json.mensaje || 'No fue posible guardar el despacho.');
 
-      document.getElementById('numeroResultado').textContent = json.numeroDespacho || 'Guardado';
+      document.getElementById('numeroResultado').textContent = json.numeroDespacho || val('numeroDespacho') || 'Guardado';
+      localStorage.removeItem('despachoBorrador');
       modal.classList.add('show');
     } catch (err) {
       showStatus('error', `Error al guardar: ${err.message}`);
@@ -284,11 +338,25 @@
     }
   });
 
-  function resetForm(){
+  function resetForm({nuevoCorrelativo=false} = {}){
+    const draft = nuevoCorrelativo ? null : {
+      id: document.getElementById('draftId').value,
+      numeroDespacho: document.getElementById('numeroDespacho').value
+    };
     form.reset();
-    document.getElementById('fechaDespacho').value = hoyISO();
-    document.getElementById('fechaResponsable').value = hoyISO();
+    setFechasAutomaticas();
     statusEl.className = 'status';
+    if (nuevoCorrelativo) {
+      localStorage.removeItem('despachoBorrador');
+      document.getElementById('draftId').value = '';
+      document.getElementById('numeroDespacho').value = '';
+      document.getElementById('numeroActual').textContent = 'Cargando...';
+      crearBorrador();
+    } else if (draft?.id) {
+      document.getElementById('draftId').value = draft.id;
+      document.getElementById('numeroDespacho').value = draft.numeroDespacho;
+      document.getElementById('numeroActual').textContent = draft.numeroDespacho;
+    }
     window.scrollTo({top:0, behavior:'smooth'});
   }
 
@@ -298,7 +366,7 @@
 
   document.getElementById('nuevoBtn').addEventListener('click', () => {
     modal.classList.remove('show');
-    resetForm();
+    resetForm({nuevoCorrelativo:true});
   });
 </script>
 </body>
