@@ -134,10 +134,8 @@
         <input id="numeroDespacho" type="hidden" />
         <input id="folio" type="hidden" />
         <div class="grid">
-          <div class="field"><label for="cliente">Cliente *</label><input id="cliente" required /></div>
-          <div class="field"><label for="destino">Destino *</label><input id="destino" required /></div>
-          <div class="field"><label for="transporte">Transporte *</label><input id="transporte" required /></div>
-          <div class="field"><label for="patente">Patente *</label><input id="patente" autocomplete="off" required /></div>
+          <div class="field"><label for="clienteDestino">Cliente / Destino *</label><input id="clienteDestino" required /></div>
+          <div class="field"><label for="transportePatente">Transporte / Patente *</label><input id="transportePatente" autocomplete="off" required /></div>
           <div class="field"><label for="formatoCaja">Formato de caja *</label><input id="formatoCaja" required /></div>
           <div class="field"><label for="etiquetaCajas">Etiqueta de cajas *</label><input id="etiquetaCajas" required /></div>
           <div class="field"><label for="cantidadCajas">Cantidad total de cajas *</label><input id="cantidadCajas" type="number" min="0" step="1" required /></div>
@@ -515,10 +513,10 @@
       numeroDespacho: val('numeroDespacho'),
       folio: val('folio'),
       fechaDespacho: val('fechaDespacho'),
-      cliente: val('cliente'),
-      destino: val('destino'),
-      transporte: val('transporte'),
-      patente: val('patente').toUpperCase(),
+      cliente: val('clienteDestino'),
+      destino: '',
+      transporte: val('transportePatente'),
+      patente: '',
       formatoCaja: val('formatoCaja'),
       etiquetaCajas: val('etiquetaCajas'),
       cantidadCajas: Number(val('cantidadCajas')),
