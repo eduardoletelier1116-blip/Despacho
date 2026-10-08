@@ -72,12 +72,27 @@
     .modal-box{max-width:480px;width:100%;background:#fff;border-radius:18px;padding:24px;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.28)}
     .tick{width:66px;height:66px;border-radius:50%;background:#e8f7ef;color:var(--verde);display:grid;place-items:center;margin:0 auto 12px;font-size:34px;font-weight:900}
     .dispatch-result{font-size:28px;color:var(--azul);font-weight:900;margin:10px 0 18px}
+
+    .evidence-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    .photo-card{border:1px solid var(--borde);border-radius:14px;padding:12px;background:#f9fbfd}
+    .photo-card label{display:block;margin-bottom:8px;color:var(--azul);font-size:14px}
+    .photo-card input[type="file"]{padding:10px;background:#fff}
+    .photo-preview{margin-top:10px;width:100%;aspect-ratio:4/3;border:1px dashed #b8c7d5;border-radius:10px;background:#eef3f7;display:grid;place-items:center;overflow:hidden;color:var(--gris);font-size:12px;text-align:center}
+    .photo-preview img{width:100%;height:100%;object-fit:cover;display:block}
+    .signature-wrap{margin-top:16px;border:1px solid var(--borde);border-radius:14px;padding:12px;background:#f9fbfd}
+    .signature-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+    .signature-head strong{color:var(--azul)}
+    .signature-canvas{width:100%;height:190px;display:block;background:#fff;border:1px dashed #9fb3c6;border-radius:10px;touch-action:none;cursor:crosshair}
+    .mini-btn{padding:8px 12px;border-radius:9px;background:#e8edf2;color:#273746;font-size:13px;min-width:auto}
+    .upload-note{margin:10px 0 0;font-size:12px;color:var(--gris);line-height:1.45}
     @media(max-width:760px){
       .topbar{align-items:flex-start}.topbar img{width:105px}.topbar h1{font-size:16px;padding-top:4px}
       .wrap{margin-top:14px;padding:0 10px 90px}.card{padding:14px;border-radius:14px}
       .grid{grid-template-columns:1fr}.field.full{grid-column:auto}
       .check-body{grid-template-columns:1fr}.actions{justify-content:stretch}.actions button{flex:1}.secondary{display:none}
       .current-dispatch{grid-template-columns:1fr}.current-dispatch .date{text-align:left}
+      .evidence-grid{grid-template-columns:1fr}
+      .signature-canvas{height:170px}
     }
   </style>
 </head>
@@ -143,6 +158,38 @@
         <div id="status" class="status"></div>
       </section>
 
+
+      <section class="card">
+        <h2>Evidencia del despacho</h2>
+        <div class="evidence-grid">
+          <div class="photo-card">
+            <label for="foto1">📷 Fotografía 1 *</label>
+            <input id="foto1" type="file" accept="image/*" capture="environment" required />
+            <div class="photo-preview" id="prev1">Sin fotografía</div>
+          </div>
+          <div class="photo-card">
+            <label for="foto2">📷 Fotografía 2 *</label>
+            <input id="foto2" type="file" accept="image/*" capture="environment" required />
+            <div class="photo-preview" id="prev2">Sin fotografía</div>
+          </div>
+          <div class="photo-card">
+            <label for="foto3">📷 Fotografía 3 *</label>
+            <input id="foto3" type="file" accept="image/*" capture="environment" required />
+            <div class="photo-preview" id="prev3">Sin fotografía</div>
+          </div>
+        </div>
+        <p class="upload-note">Las fotografías se comprimen automáticamente antes de subirlas para que el registro sea rápido desde el teléfono. Las 3 son obligatorias.</p>
+
+        <div class="signature-wrap">
+          <div class="signature-head">
+            <strong>✍️ Firma del responsable *</strong>
+            <button type="button" class="mini-btn" id="limpiarFirmaBtn">Limpiar firma</button>
+          </div>
+          <canvas id="firmaCanvas" class="signature-canvas" aria-label="Firma del responsable"></canvas>
+          <p class="upload-note">Firme con el dedo en el celular o con el mouse en el computador.</p>
+        </div>
+      </section>
+
       <div class="actions">
         <button class="secondary" type="button" id="limpiarBtn">Limpiar</button>
         <button class="primary" type="submit" id="guardarBtn">Guardar despacho</button>
@@ -156,13 +203,13 @@
       <h2 id="modalTitle">Despacho guardado</h2>
       <p>Despacho finalizado correctamente:</p>
       <div class="dispatch-result" id="numeroResultado">—</div>
-      <p class="muted">En la siguiente etapa agregaremos aquí el envío por WhatsApp y correo, sin pedir esos datos durante el llenado.</p>
+      <p class="muted">Las fotografías y la firma quedaron respaldadas en Google Drive. En la siguiente etapa agregaremos PDF, WhatsApp y correo.</p>
       <button class="primary" id="nuevoBtn" type="button">Nuevo despacho</button>
     </div>
   </div>
 
 <script>
-  const API_URL = 'https://script.google.com/macros/s/AKfycbzr61gxG5Ga0IPg3tcJ61Skgvfg16AlZlKL-0VmCwpLSxs94IfUSsVK3nFtePJWc3qY/exec';
+  const API_URL = 'https://script.google.com/macros/s/AKfycbx1FbeUeWqo6PcKBspqA6q_jWtcg4836hYvfTuEoGc0_T539HY2ALLATXFi_m7_JrEX/exec';
 
   const ITEMS = [
     'Caja (tipo y modelo)',
@@ -180,6 +227,109 @@
   const guardarBtn = document.getElementById('guardarBtn');
   const statusEl = document.getElementById('status');
   const modal = document.getElementById('okModal');
+
+  const firmaCanvas = document.getElementById('firmaCanvas');
+  const firmaCtx = firmaCanvas.getContext('2d');
+  let firmaHecha = false;
+  let dibujando = false;
+  let ultimoPunto = null;
+
+  function prepararCanvasFirma(){
+    const dpr = Math.max(window.devicePixelRatio || 1, 1);
+    const rect = firmaCanvas.getBoundingClientRect();
+    firmaCanvas.width = Math.max(1, Math.floor(rect.width * dpr));
+    firmaCanvas.height = Math.max(1, Math.floor(rect.height * dpr));
+    firmaCtx.setTransform(dpr,0,0,dpr,0,0);
+    firmaCtx.lineWidth = 2.4;
+    firmaCtx.lineCap = 'round';
+    firmaCtx.lineJoin = 'round';
+    firmaCtx.strokeStyle = '#17212b';
+  }
+
+  function limpiarFirma(){
+    firmaCtx.save();
+    firmaCtx.setTransform(1,0,0,1,0,0);
+    firmaCtx.clearRect(0,0,firmaCanvas.width,firmaCanvas.height);
+    firmaCtx.restore();
+    firmaHecha = false;
+  }
+
+  function puntoFirma(e){
+    const rect = firmaCanvas.getBoundingClientRect();
+    return {x:e.clientX-rect.left, y:e.clientY-rect.top};
+  }
+
+  firmaCanvas.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    firmaCanvas.setPointerCapture(e.pointerId);
+    dibujando = true;
+    ultimoPunto = puntoFirma(e);
+  });
+  firmaCanvas.addEventListener('pointermove', e => {
+    if (!dibujando) return;
+    e.preventDefault();
+    const p = puntoFirma(e);
+    firmaCtx.beginPath();
+    firmaCtx.moveTo(ultimoPunto.x, ultimoPunto.y);
+    firmaCtx.lineTo(p.x, p.y);
+    firmaCtx.stroke();
+    ultimoPunto = p;
+    firmaHecha = true;
+  });
+  ['pointerup','pointercancel','pointerleave'].forEach(evt => firmaCanvas.addEventListener(evt, () => { dibujando=false; ultimoPunto=null; }));
+  document.getElementById('limpiarFirmaBtn').addEventListener('click', limpiarFirma);
+
+  function firmaDataURL(){
+    const out = document.createElement('canvas');
+    out.width = firmaCanvas.width;
+    out.height = firmaCanvas.height;
+    const c = out.getContext('2d');
+    c.fillStyle = '#ffffff';
+    c.fillRect(0,0,out.width,out.height);
+    c.drawImage(firmaCanvas,0,0);
+    return out.toDataURL('image/png');
+  }
+
+  function mostrarPreview(input, previewId){
+    const box = document.getElementById(previewId);
+    const file = input.files && input.files[0];
+    if (!file){ box.textContent = 'Sin fotografía'; return; }
+    const url = URL.createObjectURL(file);
+    box.innerHTML = `<img src="${url}" alt="Vista previa">`;
+  }
+
+  [['foto1','prev1'],['foto2','prev2'],['foto3','prev3']].forEach(([id,prev]) => {
+    document.getElementById(id).addEventListener('change', e => mostrarPreview(e.target, prev));
+  });
+
+  function cargarImagen(file){
+    return new Promise((resolve,reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('No se pudo leer una de las fotografías.')); };
+      img.src = url;
+    });
+  }
+
+  async function comprimirFoto(file){
+    const img = await cargarImagen(file);
+    const max = 1280;
+    const escala = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+    const w = Math.max(1, Math.round(img.naturalWidth * escala));
+    const h = Math.max(1, Math.round(img.naturalHeight * escala));
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img,0,0,w,h);
+    return canvas.toDataURL('image/jpeg', 0.72);
+  }
+
+  async function obtenerFotosComprimidas(){
+    const files = ['foto1','foto2','foto3'].map(id => document.getElementById(id).files[0]);
+    if (files.some(f => !f)) throw new Error('Debes tomar o seleccionar las 3 fotografías.');
+    return Promise.all(files.map(comprimirFoto));
+  }
 
   function hoyISO(){
     const d = new Date();
@@ -230,6 +380,7 @@
   }
 
   setFechasAutomaticas();
+  requestAnimationFrame(() => prepararCanvasFirma());
   crearBorrador();
 
   ITEMS.forEach((item, i) => {
@@ -284,6 +435,24 @@
       showStatus('error', 'Revisa los campos obligatorios antes de guardar.');
       return;
     }
+    if (!firmaHecha) {
+      showStatus('error', 'Falta la firma del responsable.');
+      firmaCanvas.scrollIntoView({behavior:'smooth', block:'center'});
+      return;
+    }
+
+    guardarBtn.disabled = true;
+    guardarBtn.textContent = 'Procesando fotos...';
+
+    let fotos;
+    try {
+      fotos = await obtenerFotosComprimidas();
+    } catch (err) {
+      showStatus('error', err.message);
+      guardarBtn.disabled = false;
+      guardarBtn.textContent = 'Guardar despacho';
+      return;
+    }
 
     const estado = document.querySelector('input[name="estadoDespacho"]:checked')?.value || '';
     const data = {
@@ -306,11 +475,12 @@
       observacionesEstado: val('observacionesEstado'),
       responsable: val('responsable'),
       fechaResponsable: val('fechaResponsable'),
-      checklist: obtenerChecklist()
+      checklist: obtenerChecklist(),
+      firma: firmaDataURL(),
+      fotos: fotos
     };
 
-    guardarBtn.disabled = true;
-    guardarBtn.textContent = 'Guardando...';
+    guardarBtn.textContent = 'Subiendo respaldo...';
 
     try {
       const resp = await fetch(API_URL, {
@@ -344,6 +514,8 @@
       numeroDespacho: document.getElementById('numeroDespacho').value
     };
     form.reset();
+    ['prev1','prev2','prev3'].forEach(id => document.getElementById(id).textContent = 'Sin fotografía');
+    limpiarFirma();
     setFechasAutomaticas();
     statusEl.className = 'status';
     if (nuevoCorrelativo) {
