@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#123f70" />
+  <title>Check List de Despacho - Copefrut</title>
+  <style>
+    :root{
+      --azul:#123f70;
+      --azul-2:#0d3159;
+      --verde:#2b9a57;
+      --rojo:#dc5d66;
+      --fondo:#f3f6f9;
+      --borde:#d8e0e8;
+      --texto:#17212b;
+      --gris:#667788;
+      --blanco:#fff;
+      --sombra:0 10px 28px rgba(15,45,75,.10);
+      --radio:16px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--fondo);color:var(--texto)}
+    .topbar{background:var(--azul);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:20;box-shadow:0 2px 14px rgba(0,0,0,.12)}
+    .topbar img{width:132px;height:auto;background:#fff;object-fit:contain}
+    .topbar h1{font-size:clamp(16px,2.4vw,24px);margin:0;line-height:1.15;font-weight:800;letter-spacing:.2px}
+    .wrap{max-width:1100px;margin:24px auto;padding:0 14px 60px}
+    .card{background:#fff;border:1px solid var(--borde);border-radius:var(--radio);box-shadow:var(--sombra);padding:18px;margin-bottom:18px}
+    .card h2{margin:0 0 14px;color:var(--azul);font-size:18px}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+    .field{display:flex;flex-direction:column;gap:7px}
+    .field.full{grid-column:1/-1}
+    label{font-size:13px;font-weight:700;color:#314253}
+    input,select,textarea{width:100%;border:1px solid #c9d4df;border-radius:10px;padding:12px 13px;font-size:16px;background:#fff;outline:none;transition:.18s}
+    input:focus,select:focus,textarea:focus{border-color:#4c83b8;box-shadow:0 0 0 3px rgba(76,131,184,.12)}
+    textarea{min-height:92px;resize:vertical}
+    .muted{font-size:12px;color:var(--gris)}
+    .dispatch-number{background:#eef5fb;border:1px dashed #8db3d4;padding:12px 14px;border-radius:10px;color:var(--azul);font-weight:800}
+    .checklist{display:grid;gap:12px}
+    .check-item{border:1px solid var(--borde);border-radius:14px;overflow:hidden;background:#fff}
+    .check-head{display:flex;align-items:center;gap:10px;background:#f7f9fb;padding:12px 14px;border-bottom:1px solid var(--borde)}
+    .num{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--azul);color:white;font-weight:800;font-size:13px;flex:0 0 auto}
+    .check-title{font-weight:800;flex:1}
+    .check-body{padding:14px;display:grid;grid-template-columns:220px 1fr 1fr;gap:12px;align-items:end}
+    .seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid #cbd6df;border-radius:10px;overflow:hidden;background:#fff}
+    .seg input{display:none}
+    .seg label{padding:11px 8px;text-align:center;cursor:pointer;font-weight:800;border-right:1px solid #cbd6df;user-select:none}
+    .seg label:last-child{border-right:0}
+    .seg input[value="cumple"]:checked + label{background:var(--verde);color:#fff}
+    .seg input[value="noCumple"]:checked + label{background:var(--rojo);color:#fff}
+    .estado{display:flex;gap:10px;flex-wrap:wrap}
+    .pill{position:relative}
+    .pill input{position:absolute;opacity:0;pointer-events:none}
+    .pill label{display:inline-flex;align-items:center;gap:8px;border:1px solid #cbd6df;border-radius:999px;padding:10px 14px;cursor:pointer;background:#fff}
+    .pill input:checked + label{background:var(--azul);border-color:var(--azul);color:#fff}
+    .actions{position:sticky;bottom:0;background:rgba(243,246,249,.92);backdrop-filter:blur(8px);padding:12px 0 6px;display:flex;gap:10px;justify-content:flex-end}
+    button{appearance:none;border:0;border-radius:12px;padding:13px 18px;font-size:15px;font-weight:800;cursor:pointer}
+    .primary{background:var(--azul);color:#fff;min-width:210px}
+    .primary:hover{background:var(--azul-2)}
+    .secondary{background:#e8edf2;color:#273746}
+    button:disabled{opacity:.55;cursor:not-allowed}
+    .status{display:none;margin-top:12px;padding:13px;border-radius:10px;font-weight:700}
+    .status.ok{display:block;background:#e9f7ef;color:#1f6f41;border:1px solid #bfe5cf}
+    .status.error{display:block;background:#fdeeee;color:#9d2630;border:1px solid #f3c3c8}
+    .modal{display:none;position:fixed;inset:0;background:rgba(8,24,38,.62);z-index:50;padding:18px;align-items:center;justify-content:center}
+    .modal.show{display:flex}
+    .modal-box{max-width:480px;width:100%;background:#fff;border-radius:18px;padding:24px;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.28)}
+    .tick{width:66px;height:66px;border-radius:50%;background:#e8f7ef;color:var(--verde);display:grid;place-items:center;margin:0 auto 12px;font-size:34px;font-weight:900}
+    .dispatch-result{font-size:28px;color:var(--azul);font-weight:900;margin:10px 0 18px}
+    @media(max-width:760px){
+      .topbar{align-items:flex-start}.topbar img{width:105px}.topbar h1{font-size:16px;padding-top:4px}
+      .wrap{margin-top:14px;padding:0 10px 90px}.card{padding:14px;border-radius:14px}
+      .grid{grid-template-columns:1fr}.field.full{grid-column:auto}
+      .check-body{grid-template-columns:1fr}.actions{justify-content:stretch}.actions button{flex:1}.secondary{display:none}
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <img src="freshpak-logo.png" alt="Fresh-Pak" />
+    <h1>CHECK LIST DE DESPACHO DE CAJAS COPEFRUT</h1>
+  </header>
+
+  <main class="wrap">
+    <form id="despachoForm" novalidate>
+      <section class="card">
+        <h2>Datos del despacho</h2>
+        <div class="grid">
+          <div class="field">
+            <label>N° de despacho</label>
+            <div class="dispatch-number">Se asignará automáticamente al guardar</div>
+          </div>
+          <div class="field">
+            <label for="fechaDespacho">Fecha de despacho *</label>
+            <input id="fechaDespacho" name="fechaDespacho" type="date" required />
+          </div>
+          <div class="field"><label for="cliente">Cliente *</label><input id="cliente" required /></div>
+          <div class="field"><label for="destino">Destino *</label><input id="destino" required /></div>
+          <div class="field"><label for="transporte">Transporte *</label><input id="transporte" required /></div>
+          <div class="field"><label for="patente">Patente *</label><input id="patente" autocomplete="off" required /></div>
+          <div class="field"><label for="formatoCaja">Formato de caja *</label><input id="formatoCaja" required /></div>
+          <div class="field"><label for="etiquetaCajas">Etiqueta de cajas *</label><input id="etiquetaCajas" required /></div>
+          <div class="field"><label for="cantidadCajas">Cantidad total de cajas *</label><input id="cantidadCajas" type="number" min="0" step="1" required /></div>
+          <div class="field"><label for="numeroPallets">N° de pallets *</label><input id="numeroPallets" type="number" min="0" step="1" required /></div>
+          <div class="field"><label for="correoCliente">Correo cliente</label><input id="correoCliente" type="email" inputmode="email" /></div>
+          <div class="field"><label for="whatsappCliente">WhatsApp cliente</label><input id="whatsappCliente" type="tel" inputmode="tel" placeholder="Ej: +56912345678" /></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Ítems de control</h2>
+        <div id="checklist" class="checklist"></div>
+      </section>
+
+      <section class="card">
+        <h2>Cierre del despacho</h2>
+        <div class="grid">
+          <div class="field full">
+            <label for="observacionesGenerales">Observaciones generales</label>
+            <textarea id="observacionesGenerales"></textarea>
+          </div>
+          <div class="field full">
+            <label>Estado del despacho *</label>
+            <div class="estado">
+              <div class="pill"><input type="radio" id="conforme" name="estadoDespacho" value="Conforme" required><label for="conforme">✓ Conforme</label></div>
+              <div class="pill"><input type="radio" id="observado" name="estadoDespacho" value="Observado" required><label for="observado">! Observado</label></div>
+            </div>
+          </div>
+          <div class="field full"><label for="observacionesEstado">Observaciones del estado</label><textarea id="observacionesEstado"></textarea></div>
+          <div class="field"><label for="responsable">Nombre responsable *</label><input id="responsable" required /></div>
+          <div class="field"><label for="fechaResponsable">Fecha *</label><input id="fechaResponsable" type="date" required /></div>
+        </div>
+        <div id="status" class="status"></div>
+      </section>
+
+      <div class="actions">
+        <button class="secondary" type="button" id="limpiarBtn">Limpiar</button>
+        <button class="primary" type="submit" id="guardarBtn">Guardar despacho</button>
+      </div>
+    </form>
+  </main>
+
+  <div class="modal" id="okModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-box">
+      <div class="tick">✓</div>
+      <h2 id="modalTitle">Despacho guardado</h2>
+      <p>El correlativo asignado es:</p>
+      <div class="dispatch-result" id="numeroResultado">—</div>
+      <button class="primary" id="nuevoBtn" type="button">Nuevo despacho</button>
+    </div>
+  </div>
+
+<script>
+  const API_URL = 'https://script.google.com/macros/s/AKfycbz0p6ZMo7kPZzb9VBrGBfRsWsYfFD5bHtHUjuCFzq_xSZf2DPOqaMkVQLPnIwpB_QWj/exec';
+
+  const ITEMS = [
+    'Caja (tipo y modelo)',
+    'Etiqueta (correcta y legible)',
+    'Código / Lote',
+    'Pallet en buen estado',
+    'Film / zuncho correctamente aplicado',
+    'Distribución de cajas en pallet',
+    'Estado del transporte',
+    'Verificación final y autorización'
+  ];
+
+  const form = document.getElementById('despachoForm');
+  const checklistEl = document.getElementById('checklist');
+  const guardarBtn = document.getElementById('guardarBtn');
+  const statusEl = document.getElementById('status');
+  const modal = document.getElementById('okModal');
+
+  function hoyISO(){
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,'0');
+    const day = String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${day}`;
+  }
+
+  document.getElementById('fechaDespacho').value = hoyISO();
+  document.getElementById('fechaResponsable').value = hoyISO();
+
+  ITEMS.forEach((item, i) => {
+    const n = i + 1;
+    checklistEl.insertAdjacentHTML('beforeend', `
+      <div class="check-item" data-index="${i}">
+        <div class="check-head"><span class="num">${n}</span><div class="check-title">${item}</div></div>
+        <div class="check-body">
+          <div class="field">
+            <label>Resultado *</label>
+            <div class="seg">
+              <input type="radio" id="c_${i}" name="resultado_${i}" value="cumple" required>
+              <label for="c_${i}">Cumple</label>
+              <input type="radio" id="nc_${i}" name="resultado_${i}" value="noCumple" required>
+              <label for="nc_${i}">No cumple</label>
+            </div>
+          </div>
+          <div class="field"><label for="obs_${i}">Observación</label><input id="obs_${i}" type="text"></div>
+          <div class="field"><label for="resp_${i}">Responsable</label><input id="resp_${i}" type="text"></div>
+        </div>
+      </div>
+    `);
+  });
+
+  function val(id){ return document.getElementById(id).value.trim(); }
+
+  function obtenerChecklist(){
+    return ITEMS.map((item, i) => {
+      const marcado = document.querySelector(`input[name="resultado_${i}"]:checked`);
+      return {
+        item,
+        cumple: marcado?.value === 'cumple',
+        noCumple: marcado?.value === 'noCumple',
+        observacion: val(`obs_${i}`),
+        responsable: val(`resp_${i}`)
+      };
+    });
+  }
+
+  function showStatus(type, text){
+    statusEl.className = `status ${type}`;
+    statusEl.textContent = text;
+    statusEl.scrollIntoView({behavior:'smooth', block:'center'});
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    statusEl.className = 'status';
+
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      showStatus('error', 'Revisa los campos obligatorios antes de guardar.');
+      return;
+    }
+
+    const estado = document.querySelector('input[name="estadoDespacho"]:checked')?.value || '';
+    const data = {
+      accion: 'nuevoDespacho',
+      fechaDespacho: val('fechaDespacho'),
+      cliente: val('cliente'),
+      destino: val('destino'),
+      transporte: val('transporte'),
+      patente: val('patente').toUpperCase(),
+      formatoCaja: val('formatoCaja'),
+      etiquetaCajas: val('etiquetaCajas'),
+      cantidadCajas: Number(val('cantidadCajas')),
+      numeroPallets: Number(val('numeroPallets')),
+      correoCliente: val('correoCliente'),
+      whatsappCliente: val('whatsappCliente'),
+      observacionesGenerales: val('observacionesGenerales'),
+      estadoDespacho: estado,
+      observacionesEstado: val('observacionesEstado'),
+      responsable: val('responsable'),
+      fechaResponsable: val('fechaResponsable'),
+      checklist: obtenerChecklist()
+    };
+
+    guardarBtn.disabled = true;
+    guardarBtn.textContent = 'Guardando...';
+
+    try {
+      const resp = await fetch(API_URL, {
+        method: 'POST',
+        headers: {'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify(data),
+        redirect: 'follow'
+      });
+      const text = await resp.text();
+      let json;
+      try { json = JSON.parse(text); }
+      catch { throw new Error('La API respondió, pero no devolvió JSON válido. Revisa la implementación de Apps Script.'); }
+
+      if (!json.ok) throw new Error(json.mensaje || 'No fue posible guardar el despacho.');
+
+      document.getElementById('numeroResultado').textContent = json.numeroDespacho || 'Guardado';
+      modal.classList.add('show');
+    } catch (err) {
+      showStatus('error', `Error al guardar: ${err.message}`);
+      console.error(err);
+    } finally {
+      guardarBtn.disabled = false;
+      guardarBtn.textContent = 'Guardar despacho';
+    }
+  });
+
+  function resetForm(){
+    form.reset();
+    document.getElementById('fechaDespacho').value = hoyISO();
+    document.getElementById('fechaResponsable').value = hoyISO();
+    statusEl.className = 'status';
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  document.getElementById('limpiarBtn').addEventListener('click', () => {
+    if (confirm('¿Limpiar todos los datos del formulario?')) resetForm();
+  });
+
+  document.getElementById('nuevoBtn').addEventListener('click', () => {
+    modal.classList.remove('show');
+    resetForm();
+  });
+</script>
+</body>
+</html>
