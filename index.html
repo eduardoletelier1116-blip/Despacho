@@ -114,11 +114,11 @@
     <section class="current-dispatch" aria-live="polite">
       <div>
         <div class="eyebrow">N° de despacho en curso</div>
-        <div class="number" id="numeroActual">Cargando...</div>
+        <div class="number" id="numeroActual">Se asignará al guardar</div>
       </div>
       <div>
         <div class="eyebrow">Folio</div>
-        <div class="folio-number" id="folioActual">Cargando...</div>
+        <div class="folio-number" id="folioActual">Se asignará al guardar</div>
       </div>
       <div class="date">
         <div class="eyebrow">Fecha</div>
@@ -229,7 +229,7 @@
   </div>
 
 <script>
-  const API_URL = 'https://script.google.com/macros/s/AKfycbxk_k1i4SCcdTyTeuj8kwMgdNbYSiuvMDxvPAdFv3RDtHFlWiCW1hP5rw0Vfai2G3Uc/exec';
+  const API_URL = 'https://script.google.com/macros/s/AKfycbz4uJ3bhxJcBhM0A66-anvvmniUrjFJYqZh2_yADYPLrmiO1ZKLCEiUR-auzR7NdXTN/exec';
 
   const ITEMS = [
     'Caja (tipo y modelo)',
@@ -399,44 +399,14 @@
     document.getElementById('fechaVisible').textContent = fechaCL(hoy);
   }
 
-  async function crearBorrador(){
-    const guardado = JSON.parse(localStorage.getItem('despachoBorrador') || 'null');
-    if (guardado?.id && guardado?.numeroDespacho && guardado?.folio) {
-      document.getElementById('draftId').value = guardado.id;
-      document.getElementById('numeroDespacho').value = guardado.numeroDespacho;
-      document.getElementById('folio').value = guardado.folio;
-      document.getElementById('numeroActual').textContent = guardado.numeroDespacho;
-      document.getElementById('folioActual').textContent = guardado.folio;
-      return;
-    }
-    if (guardado) localStorage.removeItem('despachoBorrador');
-    document.getElementById('numeroActual').textContent = 'Reservando...';
-    document.getElementById('folioActual').textContent = 'Reservando...';
-    try {
-      const resp = await fetch(API_URL, {
-        method:'POST',
-        headers:{'Content-Type':'text/plain;charset=utf-8'},
-        body: JSON.stringify({accion:'crearBorrador'}),
-        redirect:'follow'
-      });
-      const json = JSON.parse(await resp.text());
-      if (!json.ok) throw new Error(json.mensaje || 'No se pudo reservar el correlativo.');
-      document.getElementById('draftId').value = json.id;
-      document.getElementById('numeroDespacho').value = json.numeroDespacho;
-      document.getElementById('numeroActual').textContent = json.numeroDespacho;
-      document.getElementById('folio').value = json.folio || '';
-      document.getElementById('folioActual').textContent = json.folio || 'Sin folio';
-      localStorage.setItem('despachoBorrador', JSON.stringify({id:json.id, numeroDespacho:json.numeroDespacho, folio:json.folio || ''}));
-    } catch(err) {
-      document.getElementById('numeroActual').textContent = 'Sin número';
-      document.getElementById('folioActual').textContent = 'Sin folio';
-      showStatus('error', `No fue posible obtener el N° de despacho y folio: ${err.message}`);
-    }
+  function iniciarSinBorrador(){
+    document.getElementById('numeroActual').textContent='Se asignará al guardar';
+    document.getElementById('folioActual').textContent='Se asignará al guardar';
   }
 
   setFechasAutomaticas();
+  iniciarSinBorrador();
   requestAnimationFrame(() => prepararCanvasFirma());
-  crearBorrador();
 
   ITEMS.forEach((item, i) => {
     const n = i + 1;
@@ -512,9 +482,9 @@
     const estado = document.querySelector('input[name="estadoDespacho"]:checked')?.value || '';
     const data = {
       accion: 'nuevoDespacho',
-      id: val('draftId'),
-      numeroDespacho: val('numeroDespacho'),
-      folio: val('folio'),
+      id: '',
+      numeroDespacho: '',
+      folio: '',
       fechaDespacho: val('fechaDespacho'),
       cliente: val('clienteDestino'),
       destino: '',
@@ -584,8 +554,7 @@
       document.getElementById('folio').value = '';
       document.getElementById('numeroActual').textContent = 'Cargando...';
       document.getElementById('folioActual').textContent = 'Cargando...';
-      crearBorrador();
-    } else if (draft?.id) {
+        } else if (draft?.id) {
       document.getElementById('draftId').value = draft.id;
       document.getElementById('numeroDespacho').value = draft.numeroDespacho;
       document.getElementById('numeroActual').textContent = draft.numeroDespacho;
