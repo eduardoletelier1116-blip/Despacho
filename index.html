@@ -112,14 +112,6 @@
 
   <main class="wrap">
     <section class="current-dispatch" aria-live="polite">
-      <div>
-        <div class="eyebrow">N° de despacho en curso</div>
-        <div class="number" id="numeroActual">Se asignará al guardar</div>
-      </div>
-      <div>
-        <div class="eyebrow">Folio</div>
-        <div class="folio-number" id="folioActual">Se asignará al guardar</div>
-      </div>
       <div class="date">
         <div class="eyebrow">Fecha</div>
         <strong id="fechaVisible">—</strong>
@@ -131,9 +123,7 @@
         <input id="fechaDespacho" name="fechaDespacho" type="hidden" />
         <input id="fechaResponsable" type="hidden" />
         <input id="draftId" type="hidden" />
-        <input id="numeroDespacho" type="hidden" />
-        <input id="folio" type="hidden" />
-        <div class="grid">
+                        <div class="grid">
           <div class="field"><label for="clienteDestino">Cliente / Destino *</label><input id="clienteDestino" required /></div>
           <div class="field"><label for="transportePatente">Transporte / Patente *</label><input id="transportePatente" autocomplete="off" required /></div>
           <div class="field"><label for="formatoCaja">Formato de caja *</label><input id="formatoCaja" required /></div>
@@ -400,8 +390,8 @@
   }
 
   function iniciarSinBorrador(){
-    document.getElementById('numeroActual').textContent='Se asignará al guardar';
-    document.getElementById('folioActual').textContent='Se asignará al guardar';
+    
+    
   }
 
   setFechasAutomaticas();
@@ -423,8 +413,7 @@
               <label for="nc_${i}">No cumple</label>
             </div>
           </div>
-          <div class="field"><label for="obs_${i}">Observación</label><input id="obs_${i}" type="text"></div>
-          <div class="field"><label for="resp_${i}">Responsable</label><input id="resp_${i}" type="text"></div>
+
         </div>
       </div>
     `);
@@ -522,8 +511,8 @@
 
       if (!json.ok) throw new Error(json.mensaje || 'No fue posible guardar el despacho.');
 
-      document.getElementById('numeroResultado').textContent = json.numeroDespacho || val('numeroDespacho') || 'Guardado';
-      document.getElementById('folioResultado').textContent = json.folio || val('folio') || '—';
+      document.getElementById('numeroResultado').textContent = json.numeroDespacho || 'Guardado';
+      document.getElementById('folioResultado').textContent = json.folio || '—';
       localStorage.removeItem('despachoBorrador');
       modal.classList.add('show');
     } catch (err) {
@@ -552,14 +541,14 @@
       document.getElementById('draftId').value = '';
       document.getElementById('numeroDespacho').value = '';
       document.getElementById('folio').value = '';
-      document.getElementById('numeroActual').textContent = 'Cargando...';
-      document.getElementById('folioActual').textContent = 'Cargando...';
+      
+      
         } else if (draft?.id) {
       document.getElementById('draftId').value = draft.id;
       document.getElementById('numeroDespacho').value = draft.numeroDespacho;
-      document.getElementById('numeroActual').textContent = draft.numeroDespacho;
+      
       document.getElementById('folio').value = draft.folio || '';
-      document.getElementById('folioActual').textContent = draft.folio || 'Sin folio';
+      
     }
     window.scrollTo({top:0, behavior:'smooth'});
   }
