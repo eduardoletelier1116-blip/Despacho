@@ -2,27 +2,18 @@ const URL_APP =
 "https://script.google.com/macros/s/AKfycbwxwpOyoRHrj4iYMDTte9Nz5jkj283xP8K_DYhFEYx3EnUtuK-WuKK3pMmC48DX6lk8/exec";
 
 
-
 const ITEMS = [
 
 "Caja (Tipo y modelo)",
-
 "Etiqueta (Correcta y legible)",
-
 "Código / Lote",
-
 "Pallet en buen estado",
-
 "Film / Zuncho correctamente aplicado",
-
 "Distribución de cajas en pallet",
-
 "Estado del transporte",
-
 "Verificación final y autorización"
 
 ];
-
 
 
 let checklist = [];
@@ -30,12 +21,9 @@ let checklist = [];
 let estadoSeleccionado = "";
 
 
-
 let canvas;
 let ctx;
 let dibujando = false;
-
-
 
 
 
@@ -50,14 +38,12 @@ crearChecklist();
 iniciarFirma();
 
 
-
 document
 .getElementById("guardar")
 .addEventListener(
 "click",
 guardarDespacho
 );
-
 
 
 document
@@ -68,11 +54,7 @@ limpiarFirma
 );
 
 
-
 });
-
-
-
 
 
 
@@ -82,65 +64,47 @@ function crearChecklist(){
 
 
 const contenedor =
-document.getElementById(
-"checklist"
-);
+document.getElementById("checklist");
 
 
-
-ITEMS.forEach(
-(item,index)=>{
+ITEMS.forEach((item,index)=>{
 
 
 checklist.push({
 
 item:item,
-
 cumple:false,
-
 noCumple:false
 
 });
 
 
 
-
 const div =
-document.createElement(
-"div"
-);
+document.createElement("div");
 
 
-
-div.className =
-"item-check";
-
+div.className="item-check";
 
 
 div.innerHTML = `
 
 <strong>${item}</strong>
 
-
 <div class="opciones">
 
 
-<button
+<button 
 class="btn-cumple"
 onclick="marcar(${index},true,this)">
-
 ✅ CUMPLE
-
 </button>
 
 
-
-<button
+<button 
 class="btn-no-cumple"
 onclick="marcar(${index},false,this)">
-
 ❌ NO CUMPLE
-
 </button>
 
 
@@ -153,14 +117,10 @@ onclick="marcar(${index},false,this)">
 contenedor.appendChild(div);
 
 
-
 });
 
 
 }
-
-
-
 
 
 
@@ -174,16 +134,15 @@ const padre =
 boton.parentElement;
 
 
-
 padre
 .querySelectorAll("button")
-.forEach(
-b=>
-b.classList.remove(
+.forEach(btn=>{
+
+btn.classList.remove(
 "seleccionado"
-)
 );
 
+});
 
 
 boton.classList.add(
@@ -200,13 +159,7 @@ checklist[index].noCumple =
 !valor;
 
 
-
 }
-
-
-
-
-
 
 
 
@@ -224,7 +177,6 @@ document
 .classList.remove(
 "seleccionado"
 );
-
 
 
 document
@@ -267,25 +219,21 @@ document
 
 
 
-
-
 async function guardarDespacho(){
 
+
+try{
 
 
 if(!estadoSeleccionado){
 
-
 alert(
-"Seleccione el estado final del despacho"
+"Seleccione el estado final"
 );
-
 
 return;
 
-
 }
-
 
 
 
@@ -294,79 +242,43 @@ await obtenerFotos();
 
 
 
-
-const firma =
-canvas.toDataURL(
-"image/png"
-);
-
-
-
-
-
-const clienteDestino =
-valor(
-"clienteDestino"
-);
-
-
-
-const transportePatente =
-valor(
-"transportePatente"
-);
-
-
-
-
-
-
 const datos = {
 
 
-accion:
-"nuevoDespacho",
-
+accion:"nuevoDespacho",
 
 
 cliente:
-clienteDestino,
-
+valor("clienteDestino"),
 
 
 destino:
-clienteDestino,
+valor("clienteDestino"),
 
 
 
 transporte:
-transportePatente,
+valor("transportePatente"),
 
 
 
 patente:
-transportePatente,
+valor("transportePatente"),
 
 
 
 formatoCaja:
-valor(
-"formatoCaja"
-),
+valor("formatoCaja"),
 
 
 
 cantidadCajas:
-valor(
-"cantidadCajas"
-),
+valor("cantidadCajas"),
 
 
 
 numeroPallets:
-valor(
-"numeroPallets"
-),
+valor("numeroPallets"),
 
 
 
@@ -376,20 +288,19 @@ estadoSeleccionado,
 
 
 observaciones:
-valor(
-"observaciones"
-),
+valor("observaciones"),
 
 
 
 responsable:
-valor(
-"responsable"
+valor("responsable"),
+
+
+
+firma:
+canvas.toDataURL(
+"image/png"
 ),
-
-
-
-firma:firma,
 
 
 
@@ -406,15 +317,10 @@ checklist:checklist
 
 
 
-
 document
-.getElementById(
-"resultado"
-)
+.getElementById("resultado")
 .innerHTML =
 "Guardando despacho...";
-
-
 
 
 
@@ -423,43 +329,36 @@ document
 fetch(
 URL_APP,
 {
+
 method:"POST",
-mode:"no-cors",
-headers:{
-"Content-Type":"text/plain"
-},
+
 body:
 JSON.stringify(datos)
+
 }
-)
 
 )
-.then(
-respuesta =>
-respuesta.json()
-)
-.then(
-data=>{
+.then(r=>r.json())
+
+.then(res=>{
 
 
-if(data.ok){
+if(res.ok){
 
 
 document
-.getElementById(
-"resultado"
-)
-.innerHTML = `
-
-✅ DESPACHO GENERADO
+.getElementById("resultado")
+.innerHTML =
+`
+✅ DESPACHO GUARDADO
 
 <br><br>
 
-<b>${data.numeroDespacho}</b>
+<b>${res.numeroDespacho}</b>
 
 <br>
 
-${data.folio}
+${res.folio}
 
 `;
 
@@ -469,37 +368,43 @@ ${data.folio}
 
 
 throw new Error(
-data.mensaje
+res.mensaje
 );
 
 
 }
 
 
+})
 
-}
-
-)
-.catch(
-error=>{
+.catch(error=>{
 
 
 document
-.getElementById(
-"resultado"
-)
+.getElementById("resultado")
 .innerHTML =
 "❌ "+error.message;
-
 
 
 });
 
 
+
+}catch(error){
+
+
+console.error(error);
+
+
+alert(
+error.message
+);
+
+
 }
 
 
-
+}
 
 
 
@@ -509,15 +414,26 @@ document
 function valor(id){
 
 
-return document
-.getElementById(id)
-.value
-.trim();
+const elemento =
+document.getElementById(id);
 
 
+if(!elemento){
+
+console.error(
+"No existe:",
+id
+);
+
+return "";
 
 }
 
+
+return elemento.value.trim();
+
+
+}
 
 
 
@@ -529,67 +445,42 @@ return document
 function obtenerFotos(){
 
 
-
 const archivos=[
 
 
-document
-.getElementById("foto1")
-.files[0],
+document.getElementById("foto1").files[0],
 
+document.getElementById("foto2").files[0],
 
-document
-.getElementById("foto2")
-.files[0],
-
-
-document
-.getElementById("foto3")
-.files[0]
+document.getElementById("foto3").files[0]
 
 
 ];
 
 
 
+if(archivos.some(f=>!f)){
 
 
-if(archivos.some(
-f=>!f
-)){
-
-
-alert(
+throw new Error(
 "Debe cargar las 3 fotografías"
 );
 
 
-throw new Error(
-"Faltan fotografías"
-);
-
-
 }
-
-
 
 
 
 return Promise.all(
 
 archivos.map(
-archivo =>
-convertirBase64(
-archivo
-)
-
+archivo=>convertirBase64(archivo)
 )
 
 );
 
 
 }
-
 
 
 
@@ -608,17 +499,14 @@ const lector =
 new FileReader();
 
 
-
 lector.onload =
 ()=>resolve(
 lector.result
 );
 
 
-
 lector.onerror =
 reject;
-
 
 
 lector.readAsDataURL(
@@ -641,9 +529,7 @@ archivo
 
 
 
-
 function iniciarFirma(){
-
 
 
 canvas =
@@ -664,53 +550,48 @@ canvas.width =
 canvas.offsetWidth;
 
 
-
 canvas.height =
 canvas.offsetHeight;
 
 
 
-
 canvas.addEventListener(
 "mousedown",
-inicioFirma
+iniciarTrazo
 );
-
 
 
 canvas.addEventListener(
 "mousemove",
-dibujarFirma
+dibujar
 );
-
 
 
 canvas.addEventListener(
 "mouseup",
-terminarFirma
+terminarTrazo
 );
 
 
 
 canvas.addEventListener(
 "touchstart",
-inicioFirma
+iniciarTrazo
 );
 
 
 
 canvas.addEventListener(
 "touchmove",
-dibujarFirma
+dibujar
 );
 
 
 
 canvas.addEventListener(
 "touchend",
-terminarFirma
+terminarTrazo
 );
-
 
 
 }
@@ -721,9 +602,7 @@ terminarFirma
 
 
 
-
-
-function obtenerPosicion(e){
+function posicion(e){
 
 
 const rect =
@@ -731,38 +610,20 @@ canvas.getBoundingClientRect();
 
 
 
-if(e.touches){
-
-
 return {
 
 x:
-e.touches[0].clientX -
-rect.left,
+(e.touches?
+e.touches[0].clientX:
+e.clientX)
+-rect.left,
 
 
 y:
-e.touches[0].clientY -
-rect.top
-
-};
-
-
-}
-
-
-
-return {
-
-
-x:
-e.clientX -
-rect.left,
-
-
-y:
-e.clientY -
-rect.top
+(e.touches?
+e.touches[0].clientY:
+e.clientY)
+-rect.top
 
 
 };
@@ -776,24 +637,22 @@ rect.top
 
 
 
-
-
-function inicioFirma(e){
+function iniciarTrazo(e){
 
 
 dibujando=true;
 
 
-const pos =
-obtenerPosicion(e);
+const p=
+posicion(e);
 
 
 ctx.beginPath();
 
 
 ctx.moveTo(
-pos.x,
-pos.y
+p.x,
+p.y
 );
 
 
@@ -803,24 +662,18 @@ pos.y
 
 
 
-
-
-
-
-function dibujarFirma(e){
+function dibujar(e){
 
 
 if(!dibujando)
 return;
 
 
-
 e.preventDefault();
 
 
-
-const pos =
-obtenerPosicion(e);
+const p=
+posicion(e);
 
 
 
@@ -829,16 +682,13 @@ ctx.lineWidth=3;
 ctx.lineCap="round";
 
 
-
 ctx.lineTo(
-pos.x,
-pos.y
+p.x,
+p.y
 );
 
 
-
 ctx.stroke();
-
 
 
 }
@@ -846,21 +696,13 @@ ctx.stroke();
 
 
 
-
-
-
-
-function terminarFirma(){
+function terminarTrazo(){
 
 
 dibujando=false;
 
 
 }
-
-
-
-
 
 
 
