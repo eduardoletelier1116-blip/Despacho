@@ -1,37 +1,36 @@
 *{
     box-sizing:border-box;
-    font-family:Arial, Helvetica, sans-serif;
+    font-family:'Segoe UI', Arial, sans-serif;
 }
-
 
 
 body{
 
     margin:0;
-    background:#f4f6f7;
+    background:#f3f5f6;
     color:#333;
 
 }
 
 
 
-/* ENCABEZADO */
+/* CABECERA */
 
 .header{
 
     background:white;
     text-align:center;
     padding:20px 15px;
-    border-bottom:4px solid #79b82a;
+    border-bottom:5px solid #79b82a;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
 
 }
 
 
-
 .logo{
 
-    width:180px;
-    max-width:80%;
+    width:230px;
+    max-width:90%;
 
 }
 
@@ -39,9 +38,13 @@ body{
 
 .header h1{
 
-    margin:12px 0 5px;
-    font-size:24px;
+    margin:15px 0 5px;
+
     color:#d71920;
+
+    font-size:26px;
+
+    font-weight:800;
 
 }
 
@@ -50,7 +53,9 @@ body{
 .header p{
 
     margin:0;
-    color:#555;
+
+    color:#666;
+
     font-size:14px;
 
 }
@@ -58,14 +63,15 @@ body{
 
 
 
-
 /* CONTENEDOR */
+
 
 .container{
 
-    width:100%;
-    max-width:700px;
+    max-width:750px;
+
     margin:auto;
+
     padding:15px;
 
 }
@@ -76,13 +82,19 @@ body{
 
 /* TARJETAS */
 
+
 .card{
 
     background:white;
-    border-radius:15px;
-    padding:20px;
+
+    border-radius:18px;
+
+    padding:22px;
+
     margin-bottom:18px;
-    box-shadow:0 3px 10px rgba(0,0,0,.08);
+
+    box-shadow:
+    0 4px 12px rgba(0,0,0,.08);
 
 }
 
@@ -91,8 +103,14 @@ body{
 .card h2{
 
     margin-top:0;
+
     color:#79b82a;
-    font-size:20px;
+
+    font-size:21px;
+
+    border-bottom:2px solid #eee;
+
+    padding-bottom:10px;
 
 }
 
@@ -100,14 +118,19 @@ body{
 
 
 
-/* FORMULARIOS */
+/* CAMPOS */
+
 
 label{
 
     display:block;
+
     margin-top:15px;
+
     margin-bottom:6px;
-    font-weight:bold;
+
+    font-weight:700;
+
     color:#444;
 
 }
@@ -115,17 +138,32 @@ label{
 
 
 input,
-select,
 textarea{
 
     width:100%;
-    padding:12px;
-    border-radius:10px;
+
+    padding:14px;
+
+    border-radius:12px;
+
     border:1px solid #ccc;
+
     font-size:16px;
-    background:#fff;
+
+    outline:none;
 
 }
+
+
+
+input:focus,
+textarea:focus{
+
+    border-color:#79b82a;
+
+}
+
+
 
 
 
@@ -141,12 +179,18 @@ textarea{
 
 /* CHECKLIST */
 
+
 .item-check{
 
     border:1px solid #ddd;
-    border-radius:12px;
-    padding:15px;
-    margin-bottom:12px;
+
+    border-radius:14px;
+
+    padding:16px;
+
+    margin-bottom:14px;
+
+    background:#fafafa;
 
 }
 
@@ -155,18 +199,26 @@ textarea{
 .item-check strong{
 
     display:block;
+
+    font-size:16px;
+
     margin-bottom:12px;
 
 }
 
 
 
+
+
 .opciones{
 
     display:flex;
-    gap:10px;
+
+    gap:12px;
 
 }
+
+
 
 
 
@@ -174,11 +226,19 @@ textarea{
 .btn-no-cumple{
 
     flex:1;
-    padding:12px;
+
+    padding:13px;
+
     border:none;
-    border-radius:10px;
+
+    border-radius:12px;
+
     color:white;
+
     font-weight:bold;
+
+    font-size:15px;
+
     cursor:pointer;
 
 }
@@ -201,9 +261,29 @@ textarea{
 
 
 
+
 .seleccionado{
 
-    outline:3px solid #333;
+    outline:4px solid #333;
+
+    transform:scale(1.03);
+
+}
+
+
+
+
+
+
+
+/* FOTOS */
+
+
+input[type="file"]{
+
+    background:#f8f8f8;
+
+    padding:12px;
 
 }
 
@@ -213,27 +293,43 @@ textarea{
 
 /* FIRMA */
 
+
 canvas{
 
     width:100%;
-    height:180px;
+
+    height:200px;
+
     border:2px dashed #aaa;
-    border-radius:10px;
+
+    border-radius:15px;
+
     background:white;
 
+    touch-action:none;
+
 }
+
 
 
 
 #limpiarFirma{
 
-    margin-top:10px;
     width:100%;
-    padding:12px;
+
+    margin-top:12px;
+
+    padding:13px;
+
     border:none;
-    border-radius:10px;
+
+    border-radius:12px;
+
     background:#666;
+
     color:white;
+
+    font-weight:bold;
 
 }
 
@@ -241,19 +337,30 @@ canvas{
 
 
 
-/* BOTON GUARDAR */
+/* GUARDAR */
+
 
 .btnGuardar{
 
     width:100%;
+
     padding:18px;
+
     border:none;
-    border-radius:15px;
+
+    border-radius:18px;
+
     background:#79b82a;
+
     color:white;
-    font-size:18px;
-    font-weight:bold;
+
+    font-size:19px;
+
+    font-weight:800;
+
     cursor:pointer;
+
+    box-shadow:0 5px 12px rgba(0,0,0,.2);
 
 }
 
@@ -261,7 +368,7 @@ canvas{
 
 .btnGuardar:hover{
 
-    background:#659c20;
+    background:#659d20;
 
 }
 
@@ -271,13 +378,21 @@ canvas{
 
 /* RESULTADO */
 
+
 .resultado{
 
     margin-top:20px;
+
+    padding:18px;
+
     background:white;
-    padding:15px;
-    border-radius:12px;
+
+    border-radius:15px;
+
     text-align:center;
+
+    font-size:17px;
+
     font-weight:bold;
 
 }
@@ -286,22 +401,29 @@ canvas{
 
 
 
-/* CELULAR */
-
-@media(max-width:500px){
-
-    .header h1{
-
-        font-size:20px;
-
-    }
+@media(max-width:600px){
 
 
-    .card{
+.header h1{
 
-        padding:15px;
+    font-size:21px;
 
-    }
+}
+
+
+.card{
+
+    padding:16px;
+
+}
+
+
+
+.opciones{
+
+    flex-direction:column;
+
+}
 
 
 }
