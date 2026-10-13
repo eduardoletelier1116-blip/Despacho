@@ -27,6 +27,16 @@ const ITEMS = [
 
 let checklist = [];
 
+let estadoSeleccionado = "";
+
+
+
+let canvas;
+let ctx;
+let dibujando = false;
+
+
+
 
 
 document.addEventListener(
@@ -40,12 +50,14 @@ crearChecklist();
 iniciarFirma();
 
 
+
 document
 .getElementById("guardar")
 .addEventListener(
 "click",
 guardarDespacho
 );
+
 
 
 document
@@ -56,7 +68,10 @@ limpiarFirma
 );
 
 
+
 });
+
+
 
 
 
@@ -80,10 +95,13 @@ ITEMS.forEach(
 checklist.push({
 
 item:item,
+
 cumple:false,
+
 noCumple:false
 
 });
+
 
 
 
@@ -91,6 +109,7 @@ const div =
 document.createElement(
 "div"
 );
+
 
 
 div.className =
@@ -106,17 +125,22 @@ div.innerHTML = `
 <div class="opciones">
 
 
-<button 
+<button
 class="btn-cumple"
 onclick="marcar(${index},true,this)">
-CUMPLE
+
+✅ CUMPLE
+
 </button>
+
 
 
 <button
 class="btn-no-cumple"
 onclick="marcar(${index},false,this)">
-NO CUMPLE
+
+❌ NO CUMPLE
+
 </button>
 
 
@@ -139,6 +163,10 @@ contenedor.appendChild(div);
 
 
 
+
+
+
+
 function marcar(index,valor,boton){
 
 
@@ -150,7 +178,8 @@ boton.parentElement;
 padre
 .querySelectorAll("button")
 .forEach(
-b=>b.classList.remove(
+b=>
+b.classList.remove(
 "seleccionado"
 )
 );
@@ -180,12 +209,89 @@ checklist[index].noCumple =
 
 
 
+
+
+
+function seleccionarEstado(valor){
+
+
+estadoSeleccionado = valor;
+
+
+
+document
+.getElementById("estadoCumple")
+.classList.remove(
+"seleccionado"
+);
+
+
+
+document
+.getElementById("estadoNoCumple")
+.classList.remove(
+"seleccionado"
+);
+
+
+
+if(valor==="Cumple"){
+
+
+document
+.getElementById("estadoCumple")
+.classList.add(
+"seleccionado"
+);
+
+
+
+}else{
+
+
+document
+.getElementById("estadoNoCumple")
+.classList.add(
+"seleccionado"
+);
+
+
+}
+
+
+}
+
+
+
+
+
+
+
+
+
 async function guardarDespacho(){
+
+
+
+if(!estadoSeleccionado){
+
+
+alert(
+"Seleccione el estado final del despacho"
+);
+
+
+return;
+
+
+}
+
 
 
 
 const fotos =
 await obtenerFotos();
+
 
 
 
@@ -197,6 +303,24 @@ canvas.toDataURL(
 
 
 
+
+const clienteDestino =
+valor(
+"clienteDestino"
+);
+
+
+
+const transportePatente =
+valor(
+"transportePatente"
+);
+
+
+
+
+
+
 const datos = {
 
 
@@ -204,53 +328,77 @@ accion:
 "nuevoDespacho",
 
 
+
 cliente:
-valor("cliente"),
+clienteDestino,
+
 
 
 destino:
-valor("destino"),
+clienteDestino,
+
 
 
 transporte:
-valor("transporte"),
+transportePatente,
+
 
 
 patente:
-valor("patente"),
+transportePatente,
+
 
 
 formatoCaja:
-valor("formatoCaja"),
+valor(
+"formatoCaja"
+),
+
 
 
 cantidadCajas:
-valor("cantidadCajas"),
+valor(
+"cantidadCajas"
+),
+
 
 
 numeroPallets:
-valor("numeroPallets"),
+valor(
+"numeroPallets"
+),
+
 
 
 estado:
-valor("estado"),
+estadoSeleccionado,
+
 
 
 observaciones:
-valor("observaciones"),
+valor(
+"observaciones"
+),
+
 
 
 responsable:
-valor("responsable"),
+valor(
+"responsable"
+),
+
 
 
 firma:firma,
 
 
+
 fotos:fotos,
 
 
+
 checklist:checklist
+
 
 
 };
@@ -270,6 +418,8 @@ document
 
 
 
+
+
 fetch(
 URL_APP,
 {
@@ -283,13 +433,14 @@ JSON.stringify(datos)
 
 )
 .then(
-r=>r.json()
+respuesta =>
+respuesta.json()
 )
 .then(
-respuesta=>{
+data=>{
 
 
-if(respuesta.ok){
+if(data.ok){
 
 
 document
@@ -298,15 +449,15 @@ document
 )
 .innerHTML = `
 
-✅ Despacho guardado
+✅ DESPACHO GENERADO
 
 <br><br>
 
-<b>${respuesta.numeroDespacho}</b>
+<b>${data.numeroDespacho}</b>
 
 <br>
 
-${respuesta.folio}
+${data.folio}
 
 `;
 
@@ -316,7 +467,7 @@ ${respuesta.folio}
 
 
 throw new Error(
-respuesta.mensaje
+data.mensaje
 );
 
 
@@ -339,6 +490,7 @@ document
 "❌ "+error.message;
 
 
+
 });
 
 
@@ -351,14 +503,20 @@ document
 
 
 
+
 function valor(id){
+
 
 return document
 .getElementById(id)
 .value
 .trim();
 
+
+
 }
+
+
 
 
 
@@ -369,28 +527,67 @@ return document
 function obtenerFotos(){
 
 
+
 const archivos=[
 
-document.getElementById("foto1").files[0],
 
-document.getElementById("foto2").files[0],
+document
+.getElementById("foto1")
+.files[0],
 
-document.getElementById("foto3").files[0]
+
+document
+.getElementById("foto2")
+.files[0],
+
+
+document
+.getElementById("foto3")
+.files[0]
+
 
 ];
+
+
+
+
+
+if(archivos.some(
+f=>!f
+)){
+
+
+alert(
+"Debe cargar las 3 fotografías"
+);
+
+
+throw new Error(
+"Faltan fotografías"
+);
+
+
+}
+
+
 
 
 
 return Promise.all(
 
 archivos.map(
-archivo=>
-convertirBase64(archivo)
+archivo =>
+convertirBase64(
+archivo
+)
+
 )
 
 );
 
+
 }
+
 
 
 
@@ -409,14 +606,17 @@ const lector =
 new FileReader();
 
 
+
 lector.onload =
 ()=>resolve(
 lector.result
 );
 
 
+
 lector.onerror =
 reject;
+
 
 
 lector.readAsDataURL(
@@ -424,6 +624,7 @@ archivo
 );
 
 
+
 }
 
 );
@@ -436,21 +637,18 @@ archivo
 
 
 
-
-
-let canvas;
-let ctx;
-let dibujando=false;
 
 
 
 function iniciarFirma(){
 
 
+
 canvas =
 document.getElementById(
 "firma"
 );
+
 
 
 ctx =
@@ -463,44 +661,52 @@ canvas.getContext(
 canvas.width =
 canvas.offsetWidth;
 
+
+
 canvas.height =
 canvas.offsetHeight;
 
 
 
+
 canvas.addEventListener(
 "mousedown",
-inicio
+inicioFirma
 );
+
 
 
 canvas.addEventListener(
 "mousemove",
-dibujar
+dibujarFirma
 );
+
 
 
 canvas.addEventListener(
 "mouseup",
-fin
+terminarFirma
 );
+
 
 
 canvas.addEventListener(
 "touchstart",
-inicio
+inicioFirma
 );
+
 
 
 canvas.addEventListener(
 "touchmove",
-dibujar
+dibujarFirma
 );
+
 
 
 canvas.addEventListener(
 "touchend",
-fin
+terminarFirma
 );
 
 
@@ -513,26 +719,107 @@ fin
 
 
 
-function inicio(e){
+
+
+function obtenerPosicion(e){
+
+
+const rect =
+canvas.getBoundingClientRect();
+
+
+
+if(e.touches){
+
+
+return {
+
+x:
+e.touches[0].clientX -
+rect.left,
+
+
+y:
+e.touches[0].clientY -
+rect.top
+
+};
+
+
+}
+
+
+
+return {
+
+
+x:
+e.clientX -
+rect.left,
+
+
+y:
+e.clientY -
+rect.top
+
+
+};
+
+
+}
+
+
+
+
+
+
+
+
+
+function inicioFirma(e){
+
 
 dibujando=true;
 
+
+const pos =
+obtenerPosicion(e);
+
+
 ctx.beginPath();
 
+
 ctx.moveTo(
-e.offsetX,
-e.offsetY
+pos.x,
+pos.y
 );
+
 
 }
 
 
 
 
-function dibujar(e){
+
+
+
+
+
+function dibujarFirma(e){
+
 
 if(!dibujando)
 return;
+
+
+
+e.preventDefault();
+
+
+
+const pos =
+obtenerPosicion(e);
+
 
 
 ctx.lineWidth=3;
@@ -540,24 +827,37 @@ ctx.lineWidth=3;
 ctx.lineCap="round";
 
 
+
 ctx.lineTo(
-e.offsetX,
-e.offsetY
+pos.x,
+pos.y
 );
+
 
 
 ctx.stroke();
 
 
+
 }
 
 
 
-function fin(){
+
+
+
+
+
+function terminarFirma(){
+
 
 dibujando=false;
 
+
 }
+
+
+
 
 
 
@@ -565,11 +865,18 @@ dibujando=false;
 
 function limpiarFirma(){
 
+
 ctx.clearRect(
+
 0,
+
 0,
+
 canvas.width,
+
 canvas.height
+
 );
+
 
 }
