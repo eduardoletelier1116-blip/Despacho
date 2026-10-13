@@ -3,7 +3,6 @@ const URL_APP =
 
 
 const ITEMS = [
-
 "Caja (Tipo y modelo)",
 "Etiqueta (Correcta y legible)",
 "Código / Lote",
@@ -12,7 +11,6 @@ const ITEMS = [
 "Distribución de cajas en pallet",
 "Estado del transporte",
 "Verificación final y autorización"
-
 ];
 
 
@@ -20,41 +18,35 @@ let checklist = [];
 
 let estadoSeleccionado = "";
 
-
 let canvas;
 let ctx;
 let dibujando = false;
 
 
 
-document.addEventListener(
-"DOMContentLoaded",
-()=>{
+window.onload = function(){
+
+    crearChecklist();
+
+    iniciarFirma();
 
 
-crearChecklist();
+    document
+    .getElementById("guardar")
+    .addEventListener(
+        "click",
+        guardarDespacho
+    );
 
 
-iniciarFirma();
+    document
+    .getElementById("limpiarFirma")
+    .addEventListener(
+        "click",
+        limpiarFirma
+    );
 
-
-document
-.getElementById("guardar")
-.addEventListener(
-"click",
-guardarDespacho
-);
-
-
-document
-.getElementById("limpiarFirma")
-.addEventListener(
-"click",
-limpiarFirma
-);
-
-
-});
+};
 
 
 
@@ -63,64 +55,94 @@ limpiarFirma
 function crearChecklist(){
 
 
-const contenedor =
-document.getElementById("checklist");
+    const contenedor =
+    document.getElementById("checklist");
 
 
-ITEMS.forEach((item,index)=>{
+    if(!contenedor){
+        console.error("No existe checklist");
+        return;
+    }
 
 
-checklist.push({
-
-item:item,
-cumple:false,
-noCumple:false
-
-});
+    contenedor.innerHTML="";
 
 
-
-const div =
-document.createElement("div");
+    ITEMS.forEach((item,index)=>{
 
 
-div.className="item-check";
+        checklist.push({
 
+            item:item,
+            cumple:false,
+            noCumple:false
 
-div.innerHTML = `
-
-<strong>${item}</strong>
-
-<div class="opciones">
-
-
-<button 
-class="btn-cumple"
-onclick="marcar(${index},true,this)">
-✅ CUMPLE
-</button>
-
-
-<button 
-class="btn-no-cumple"
-onclick="marcar(${index},false,this)">
-❌ NO CUMPLE
-</button>
-
-
-</div>
-
-`;
+        });
 
 
 
-contenedor.appendChild(div);
+        const div =
+        document.createElement("div");
 
 
-});
+        div.className="item-check";
+
+
+        div.innerHTML = `
+
+        <strong>${item}</strong>
+
+        <div class="opciones">
+
+
+        <button 
+        type="button"
+        class="btn-cumple"
+        id="cumple${index}">
+        ✅ CUMPLE
+        </button>
+
+
+        <button
+        type="button"
+        class="btn-no-cumple"
+        id="nocumple${index}">
+        ❌ NO CUMPLE
+        </button>
+
+
+        </div>
+
+        `;
+
+
+        contenedor.appendChild(div);
+
+
+
+        document
+        .getElementById("cumple"+index)
+        .onclick=function(){
+
+            marcar(index,true,this);
+
+        };
+
+
+        document
+        .getElementById("nocumple"+index)
+        .onclick=function(){
+
+            marcar(index,false,this);
+
+        };
+
+
+    });
 
 
 }
+
 
 
 
@@ -130,36 +152,39 @@ contenedor.appendChild(div);
 function marcar(index,valor,boton){
 
 
-const padre =
-boton.parentElement;
+    const padre =
+    boton.parentElement;
 
 
-padre
-.querySelectorAll("button")
-.forEach(btn=>{
+    padre
+    .querySelectorAll("button")
+    .forEach(b=>{
 
-btn.classList.remove(
-"seleccionado"
-);
+        b.classList.remove(
+            "seleccionado"
+        );
 
-});
-
-
-boton.classList.add(
-"seleccionado"
-);
+    });
 
 
+    boton.classList.add(
+        "seleccionado"
+    );
 
-checklist[index].cumple =
-valor;
 
 
-checklist[index].noCumple =
-!valor;
+    checklist[index].cumple =
+    valor;
+
+
+    checklist[index].noCumple =
+    !valor;
 
 
 }
+
+
+
 
 
 
@@ -168,50 +193,54 @@ checklist[index].noCumple =
 function seleccionarEstado(valor){
 
 
-estadoSeleccionado = valor;
+    estadoSeleccionado=valor;
+
+
+    document
+    .getElementById("estadoCumple")
+    .classList.remove(
+        "seleccionado"
+    );
+
+
+    document
+    .getElementById("estadoNoCumple")
+    .classList.remove(
+        "seleccionado"
+    );
 
 
 
-document
-.getElementById("estadoCumple")
-.classList.remove(
-"seleccionado"
-);
+    if(valor==="Cumple"){
 
 
-document
-.getElementById("estadoNoCumple")
-.classList.remove(
-"seleccionado"
-);
+        document
+        .getElementById("estadoCumple")
+        .classList.add(
+            "seleccionado"
+        );
 
 
-
-if(valor==="Cumple"){
-
-
-document
-.getElementById("estadoCumple")
-.classList.add(
-"seleccionado"
-);
+    }else{
 
 
+        document
+        .getElementById("estadoNoCumple")
+        .classList.add(
+            "seleccionado"
+        );
 
-}else{
 
-
-document
-.getElementById("estadoNoCumple")
-.classList.add(
-"seleccionado"
-);
+    }
 
 
 }
 
 
-}
+
+window.seleccionarEstado =
+seleccionarEstado;
+
 
 
 
@@ -222,189 +251,133 @@ document
 async function guardarDespacho(){
 
 
+
 try{
 
 
-if(!estadoSeleccionado){
+    const fotos =
+    await obtenerFotos();
 
-alert(
-"Seleccione el estado final"
-);
 
-return;
 
-}
+    const datos={
 
 
+        accion:"nuevoDespacho",
 
-const fotos =
-await obtenerFotos();
 
+        cliente:
+        valor("clienteDestino"),
 
 
-const datos = {
+        destino:
+        valor("clienteDestino"),
 
 
-accion:"nuevoDespacho",
+        transporte:
+        valor("transportePatente"),
 
 
-cliente:
-valor("clienteDestino"),
+        patente:
+        valor("transportePatente"),
 
 
-destino:
-valor("clienteDestino"),
+        formatoCaja:
+        valor("formatoCaja"),
 
 
+        cantidadCajas:
+        valor("cantidadCajas"),
 
-transporte:
-valor("transportePatente"),
 
+        numeroPallets:
+        valor("numeroPallets"),
 
 
-patente:
-valor("transportePatente"),
+        estado:
+        estadoSeleccionado,
 
 
+        observaciones:
+        valor("observaciones"),
 
-formatoCaja:
-valor("formatoCaja"),
 
+        responsable:
+        valor("responsable"),
 
 
-cantidadCajas:
-valor("cantidadCajas"),
+        firma:
+        canvas.toDataURL(
+            "image/png"
+        ),
 
 
+        fotos:fotos,
 
-numeroPallets:
-valor("numeroPallets"),
 
+        checklist:checklist
 
 
-estado:
-estadoSeleccionado,
+    };
 
 
 
-observaciones:
-valor("observaciones"),
+    document
+    .getElementById("resultado")
+    .innerHTML=
+    "Guardando...";
 
 
 
-responsable:
-valor("responsable"),
+    fetch(
+        URL_APP,
+        {
 
+            method:"POST",
 
+            body:
+            JSON.stringify(datos)
 
-firma:
-canvas.toDataURL(
-"image/png"
-),
+        }
 
+    )
+    .then(r=>r.json())
 
+    .then(res=>{
 
-fotos:fotos,
 
+        document
+        .getElementById("resultado")
+        .innerHTML=
+        `
+        ✅ Guardado correctamente
 
+        <br><br>
 
-checklist:checklist
+        ${res.numeroDespacho}
 
+        <br>
 
+        ${res.folio}
 
-};
+        `;
 
 
-
-
-document
-.getElementById("resultado")
-.innerHTML =
-"Guardando despacho...";
-
-
-
-
-
-fetch(
-URL_APP,
-{
-
-method:"POST",
-
-body:
-JSON.stringify(datos)
-
-}
-
-)
-.then(r=>r.json())
-
-.then(res=>{
-
-
-if(res.ok){
-
-
-document
-.getElementById("resultado")
-.innerHTML =
-`
-✅ DESPACHO GUARDADO
-
-<br><br>
-
-<b>${res.numeroDespacho}</b>
-
-<br>
-
-${res.folio}
-
-`;
-
-
-
-}else{
-
-
-throw new Error(
-res.mensaje
-);
-
-
-}
-
-
-})
-
-.catch(error=>{
-
-
-document
-.getElementById("resultado")
-.innerHTML =
-"❌ "+error.message;
-
-
-});
+    });
 
 
 
 }catch(error){
 
+    alert(error.message);
 
-console.error(error);
+}
 
-
-alert(
-error.message
-);
 
 
 }
 
 
-}
 
 
 
@@ -414,23 +387,11 @@ error.message
 function valor(id){
 
 
-const elemento =
+const e =
 document.getElementById(id);
 
 
-if(!elemento){
-
-console.error(
-"No existe:",
-id
-);
-
-return "";
-
-}
-
-
-return elemento.value.trim();
+return e ? e.value.trim() : "";
 
 
 }
@@ -447,13 +408,9 @@ function obtenerFotos(){
 
 const archivos=[
 
-
-document.getElementById("foto1").files[0],
-
-document.getElementById("foto2").files[0],
-
-document.getElementById("foto3").files[0]
-
+foto1.files[0],
+foto2.files[0],
+foto3.files[0]
 
 ];
 
@@ -463,7 +420,7 @@ if(archivos.some(f=>!f)){
 
 
 throw new Error(
-"Debe cargar las 3 fotografías"
+"Debe cargar las 3 fotos"
 );
 
 
@@ -474,7 +431,7 @@ throw new Error(
 return Promise.all(
 
 archivos.map(
-archivo=>convertirBase64(archivo)
+convertirBase64
 )
 
 );
@@ -488,11 +445,11 @@ archivo=>convertirBase64(archivo)
 
 
 
+
 function convertirBase64(archivo){
 
 
-return new Promise(
-(resolve,reject)=>{
+return new Promise(resolve=>{
 
 
 const lector =
@@ -505,23 +462,16 @@ lector.result
 );
 
 
-lector.onerror =
-reject;
-
-
 lector.readAsDataURL(
 archivo
 );
 
 
 
-}
-
-);
+});
 
 
 }
-
 
 
 
@@ -538,12 +488,8 @@ document.getElementById(
 );
 
 
-
 ctx =
-canvas.getContext(
-"2d"
-);
-
+canvas.getContext("2d");
 
 
 canvas.width =
@@ -555,126 +501,36 @@ canvas.offsetHeight;
 
 
 
-canvas.addEventListener(
-"mousedown",
-iniciarTrazo
-);
+canvas.onmousedown=iniciar;
 
+canvas.onmousemove=dibujar;
 
-canvas.addEventListener(
-"mousemove",
-dibujar
-);
-
-
-canvas.addEventListener(
-"mouseup",
-terminarTrazo
-);
-
-
-
-canvas.addEventListener(
-"touchstart",
-iniciarTrazo
-);
-
-
-
-canvas.addEventListener(
-"touchmove",
-dibujar
-);
-
-
-
-canvas.addEventListener(
-"touchend",
-terminarTrazo
-);
+canvas.onmouseup=terminar;
 
 
 }
 
 
 
-
-
-
-
-function posicion(e){
-
-
-const rect =
-canvas.getBoundingClientRect();
-
-
-
-return {
-
-x:
-(e.touches?
-e.touches[0].clientX:
-e.clientX)
--rect.left,
-
-
-y:
-(e.touches?
-e.touches[0].clientY:
-e.clientY)
--rect.top
-
-
-};
-
-
-}
-
-
-
-
-
-
-
-function iniciarTrazo(e){
-
+function iniciar(e){
 
 dibujando=true;
 
-
-const p=
-posicion(e);
-
-
 ctx.beginPath();
 
-
 ctx.moveTo(
-p.x,
-p.y
+e.offsetX,
+e.offsetY
 );
 
-
 }
-
-
 
 
 
 function dibujar(e){
 
 
-if(!dibujando)
-return;
-
-
-e.preventDefault();
-
-
-const p=
-posicion(e);
-
+if(!dibujando)return;
 
 
 ctx.lineWidth=3;
@@ -683,8 +539,8 @@ ctx.lineCap="round";
 
 
 ctx.lineTo(
-p.x,
-p.y
+e.offsetX,
+e.offsetY
 );
 
 
@@ -695,12 +551,9 @@ ctx.stroke();
 
 
 
-
-function terminarTrazo(){
-
+function terminar(){
 
 dibujando=false;
-
 
 }
 
@@ -709,18 +562,11 @@ dibujando=false;
 
 function limpiarFirma(){
 
-
 ctx.clearRect(
-
 0,
-
 0,
-
 canvas.width,
-
 canvas.height
-
 );
-
 
 }
