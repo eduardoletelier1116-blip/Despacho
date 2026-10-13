@@ -24,6 +24,9 @@
     .topbar{background:var(--azul);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:20;box-shadow:0 2px 14px rgba(0,0,0,.12)}
     .topbar img{width:132px;height:auto;background:#fff;object-fit:contain}
     .topbar h1{font-size:clamp(16px,2.4vw,24px);margin:0;line-height:1.15;font-weight:800;letter-spacing:.2px}
+    .top-date{margin-left:auto;text-align:right;display:flex;flex-direction:column;line-height:1.1}
+    .top-date span{font-size:10px;font-weight:800;letter-spacing:.8px;opacity:.85}
+    .top-date strong{font-size:14px;font-weight:800;color:#fff}
     .wrap{max-width:1100px;margin:24px auto;padding:0 14px 60px}
     .card{background:#fff;border:1px solid var(--borde);border-radius:var(--radio);box-shadow:var(--sombra);padding:18px;margin-bottom:18px}
     .card h2{margin:0 0 14px;color:var(--azul);font-size:18px}
@@ -108,15 +111,13 @@
   <header class="topbar">
     <img src="freshpak-logo.png" alt="Fresh-Pak" />
     <h1>CHECK LIST DE DESPACHO DE CAJAS COPEFRUT</h1>
+    <div class="top-date">
+      <span>FECHA</span>
+      <strong id="fechaVisible">—</strong>
+    </div>
   </header>
 
   <main class="wrap">
-    <section class="current-dispatch" aria-live="polite">
-      <div class="date">
-        <div class="eyebrow">Fecha</div>
-        <strong id="fechaVisible">—</strong>
-      </div>
-    </section>
     <form id="despachoForm" novalidate>
       <section class="card">
         <h2>Datos del despacho</h2>
