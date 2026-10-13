@@ -19,7 +19,7 @@
 
 <header class="header">
 
-<img src="logo.png" class="logo">
+<img src="freshpak-logo.png" class="logo">
 
 <h1>DESPACHO DE MATERIALES</h1>
 
@@ -31,59 +31,34 @@ Control de salida y verificación
 
 
 
-
 <main class="container">
 
 
 
 <section class="card">
 
-<h2>
-Información del despacho
-</h2>
+<h2>Información del despacho</h2>
 
 
 <label>
-Cliente
+Cliente / Destino
 </label>
 
 <input 
-id="cliente"
+id="clienteDestino"
 type="text"
-placeholder="Ingrese cliente">
+placeholder="Ingrese cliente o destino">
 
 
 
 <label>
-Destino
+Transporte / Patente
 </label>
 
 <input 
-id="destino"
+id="transportePatente"
 type="text"
-placeholder="Ingrese destino">
-
-
-
-<label>
-Transporte
-</label>
-
-<input 
-id="transporte"
-type="text"
-placeholder="Ingrese transporte">
-
-
-
-<label>
-Patente
-</label>
-
-<input 
-id="patente"
-type="text"
-placeholder="Ingrese patente">
+placeholder="Ingrese transporte y patente">
 
 
 
@@ -94,7 +69,7 @@ Formato de caja
 <input 
 id="formatoCaja"
 type="text"
-placeholder="Ej: Caja 10 kg">
+placeholder="Ingrese formato de caja">
 
 
 
@@ -104,7 +79,8 @@ Cantidad de cajas
 
 <input 
 id="cantidadCajas"
-type="number">
+type="number"
+placeholder="Cantidad">
 
 
 
@@ -114,10 +90,11 @@ Número de pallets
 
 <input 
 id="numeroPallets"
-type="number">
-
+type="number"
+placeholder="Cantidad">
 
 </section>
+
 
 
 
@@ -131,9 +108,7 @@ Checklist de despacho
 </h2>
 
 
-
 <div id="checklist"></div>
-
 
 
 </section>
@@ -152,31 +127,33 @@ Estado final
 
 
 
-<label>
-Estado despacho
-</label>
+<div class="opciones">
 
 
-<select id="estado">
+<button
+id="estadoCumple"
+class="btn-cumple"
+onclick="seleccionarEstado('Cumple')">
+
+✅ CUMPLE
+
+</button>
 
 
-<option value="">
-Seleccione
-</option>
 
 
-<option value="Cumple">
-Cumple
-</option>
+<button
+id="estadoNoCumple"
+class="btn-no-cumple"
+onclick="seleccionarEstado('No cumple')">
+
+❌ NO CUMPLE
+
+</button>
 
 
-<option value="No cumple">
-No cumple
-</option>
 
-
-</select>
-
+</div>
 
 
 
@@ -185,7 +162,7 @@ Observaciones generales
 </label>
 
 
-<textarea 
+<textarea
 id="observaciones"
 rows="5"
 placeholder="Ingrese observaciones">
@@ -201,12 +178,14 @@ placeholder="Ingrese observaciones">
 
 
 
+
 <section class="card">
 
 
 <h2>
 Evidencia fotográfica
 </h2>
+
 
 
 <label>
@@ -221,6 +200,8 @@ capture="environment">
 
 
 
+
+
 <label>
 Foto 2
 </label>
@@ -230,6 +211,8 @@ type="file"
 id="foto2"
 accept="image/*"
 capture="environment">
+
+
 
 
 
@@ -254,7 +237,6 @@ capture="environment">
 
 
 
-
 <section class="card">
 
 
@@ -269,7 +251,7 @@ Nombre responsable
 </label>
 
 
-<input 
+<input
 id="responsable"
 type="text"
 placeholder="Nombre completo">
@@ -304,8 +286,7 @@ Limpiar firma
 
 
 
-
-<button 
+<button
 class="btnGuardar"
 id="guardar">
 
@@ -317,8 +298,7 @@ GUARDAR DESPACHO
 
 
 
-
-<div 
+<div
 id="resultado"
 class="resultado">
 
@@ -326,10 +306,7 @@ class="resultado">
 
 
 
-
 </main>
-
-
 
 
 
