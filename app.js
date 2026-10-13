@@ -423,13 +423,15 @@ document
 fetch(
 URL_APP,
 {
-
 method:"POST",
-
+mode:"no-cors",
+headers:{
+"Content-Type":"text/plain"
+},
 body:
 JSON.stringify(datos)
-
 }
+)
 
 )
 .then(
