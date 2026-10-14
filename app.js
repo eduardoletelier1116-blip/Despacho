@@ -263,63 +263,70 @@ try{
     const datos={
 
 
-        accion:"nuevoDespacho",
+accion:"nuevoDespacho",
 
 
-        cliente:
-        valor("clienteDestino"),
+cliente:
+valor("clienteDestino"),
 
 
-        destino:
-        valor("clienteDestino"),
+destino:
+valor("clienteDestino"),
 
 
-        transporte:
-        valor("transportePatente"),
+transporte:
+valor("transportePatente"),
 
 
-        patente:
-        valor("transportePatente"),
+patente:
+valor("transportePatente"),
 
 
-        formatoCaja:
-        valor("formatoCaja"),
+formatoCaja:
+valor("formatoCaja"),
 
 
-        cantidadCajas:
-        valor("cantidadCajas"),
+etiquetaCajas:
+valor("etiquetaCajas"),
 
 
-        numeroPallets:
-        valor("numeroPallets"),
+cantidadCajas:
+valor("cantidadCajas"),
 
 
-        estado:
-        estadoSeleccionado,
+numeroPallets:
+valor("numeroPallets"),
 
 
-        observaciones:
-        valor("observaciones"),
+estado:
+estadoSeleccionado,
 
 
-        responsable:
-        valor("responsable"),
+observaciones:
+valor("observaciones"),
 
 
-        firma:
-        canvas.toDataURL(
-            "image/png"
-        ),
+observacionesEstado:
+"",
 
 
-        fotos:fotos,
+responsable:
+valor("responsable"),
 
 
-        checklist:checklist
+firma:
+canvas.toDataURL(
+"image/png"
+),
 
 
-    };
+fotos:fotos,
 
+
+checklist:checklist
+
+
+};
 
 
     document
