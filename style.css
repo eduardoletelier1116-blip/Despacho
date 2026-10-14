@@ -427,3 +427,37 @@ canvas{
 
 
 }
+
+.resultado-exito{
+
+margin-top:20px;
+
+padding:20px;
+
+border-radius:12px;
+
+text-align:center;
+
+background:#e8f5e9;
+
+border:2px solid #4caf50;
+
+}
+
+
+
+.resultado-exito h1{
+
+font-size:32px;
+
+margin:10px 0;
+
+}
+
+
+
+.resultado-exito h2{
+
+margin:5px;
+
+}
