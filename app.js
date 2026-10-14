@@ -605,3 +605,86 @@ canvas.height
 );
 
 }
+
+function limpiarFormulario(){
+
+
+
+// Limpiar campos de texto
+
+document
+.querySelectorAll("input")
+.forEach(input=>{
+
+
+    if(input.type !== "button"){
+
+        input.value="";
+
+    }
+
+
+});
+
+
+
+
+// Limpiar observaciones
+
+document
+.querySelectorAll("textarea")
+.forEach(textarea=>{
+
+    textarea.value="";
+
+});
+
+
+
+
+// Limpiar fotos
+
+foto1.value="";
+foto2.value="";
+foto3.value="";
+
+
+
+
+// Limpiar firma
+
+limpiarFirma();
+
+
+
+
+// Quitar selección estado
+
+estadoSeleccionado="";
+
+
+document
+.getElementById("estadoCumple")
+.classList.remove(
+"seleccionado"
+);
+
+
+document
+.getElementById("estadoNoCumple")
+.classList.remove(
+"seleccionado"
+);
+
+
+
+
+// Reiniciar checklist
+
+checklist=[];
+
+crearChecklist();
+
+
+
+}
