@@ -353,24 +353,44 @@ checklist:checklist
     .then(res=>{
 
 
-        document
-        .getElementById("resultado")
-        .innerHTML=
-        `
-        ✅ Guardado correctamente
+document
+.getElementById("resultado")
+.innerHTML=
+`
 
-        <br><br>
-
-        ${res.numeroDespacho}
-
-        <br>
-
-        ${res.folio}
-
-        `;
+<div class="resultado-exito">
 
 
-    });
+<h2>
+✅ DESPACHO GUARDADO
+</h2>
+
+
+<p>
+Número de despacho:
+</p>
+
+<h1>
+${res.numeroDespacho}
+</h1>
+
+
+<p>
+Folio:
+</p>
+
+<h2>
+${res.folio}
+</h2>
+
+
+</div>
+
+`;
+
+
+
+});
 
 
 
