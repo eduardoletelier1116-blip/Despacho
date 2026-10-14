@@ -390,6 +390,14 @@ ${res.folio}
 
 
 
+setTimeout(()=>{
+
+    limpiarFormulario();
+
+},3000);
+
+
+
 });
 
 
