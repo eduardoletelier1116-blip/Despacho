@@ -248,175 +248,107 @@ seleccionarEstado;
 
 
 
-async function guardarDespacho(){
+async function guardarDespacho() {
+    const boton = document.getElementById("guardar");
+    const resultado = document.getElementById("resultado");
 
+    boton.disabled = true;
+    boton.textContent = "GUARDANDO...";
+    resultado.textContent = "Preparando fotos y despacho...";
 
+    try {
+        const fotos = await obtenerFotos();
 
-try{
+        const datos = {
+            accion: "nuevoDespacho",
+            cliente: valor("clienteDestino"),
+            destino: valor("clienteDestino"),
+            transporte: valor("transportePatente"),
+            patente: valor("transportePatente"),
+            formatoCaja: valor("formatoCaja"),
+            etiquetaCajas: valor("etiquetaCajas"),
+            cantidadCajas: valor("cantidadCajas"),
+            numeroPallets: valor("numeroPallets"),
+            estado: estadoSeleccionado,
+            observaciones: valor("observaciones"),
+            observacionesEstado: "",
+            responsable: valor("responsable"),
+            firma: canvas.toDataURL("image/png"),
+            fotos: fotos,
+            checklist: checklist
+        };
 
+        resultado.textContent =
+            "Guardando despacho y generando PDF. Espere...";
 
-    const fotos =
-    await obtenerFotos();
+        const respuesta = await fetch(URL_APP, {
+            method: "POST",
+            body: JSON.stringify(datos)
+        });
 
-
-
-    const datos={
-
-
-accion:"nuevoDespacho",
-
-
-cliente:
-valor("clienteDestino"),
-
-
-destino:
-valor("clienteDestino"),
-
-
-transporte:
-valor("transportePatente"),
-
-
-patente:
-valor("transportePatente"),
-
-
-formatoCaja:
-valor("formatoCaja"),
-
-
-etiquetaCajas:
-valor("etiquetaCajas"),
-
-
-cantidadCajas:
-valor("cantidadCajas"),
-
-
-numeroPallets:
-valor("numeroPallets"),
-
-
-estado:
-estadoSeleccionado,
-
-
-observaciones:
-valor("observaciones"),
-
-
-observacionesEstado:
-"",
-
-
-responsable:
-valor("responsable"),
-
-
-firma:
-canvas.toDataURL(
-"image/png"
-),
-
-
-fotos:fotos,
-
-
-checklist:checklist
-
-
-};
-
-
-    document
-    .getElementById("resultado")
-    .innerHTML=
-    "Guardando...";
-
-
-
-    fetch(
-        URL_APP,
-        {
-
-            method:"POST",
-
-            body:
-            JSON.stringify(datos)
-
+        if (!respuesta.ok) {
+            throw new Error(
+                "Error de conexión con el servidor: " +
+                respuesta.status
+            );
         }
 
-    )
-    .then(r=>r.json())
+        const res = await respuesta.json();
 
-    .then(res=>{
+        if (res.ok !== true) {
+            throw new Error(
+                res.mensaje ||
+                "El servidor no pudo completar el despacho."
+            );
+        }
 
+        if (!res.pdfUrl) {
+            throw new Error(
+                "El despacho se guardó, pero el servidor " +
+                "no devolvió el enlace del PDF."
+            );
+        }
 
-document
-.getElementById("resultado")
-.innerHTML=
-`
+        resultado.innerHTML = "";
 
-<div class="resultado-exito">
+        const tarjeta = document.createElement("div");
+        tarjeta.className = "resultado-exito";
 
+        const titulo = document.createElement("h2");
+        titulo.textContent = "✅ DESPACHO Y PDF GENERADOS";
 
-<h2>
-✅ DESPACHO GUARDADO
-</h2>
+        const numero = document.createElement("p");
+        numero.textContent =
+            "Número de despacho: " + res.numeroDespacho;
 
+        const folio = document.createElement("p");
+        folio.textContent = "Folio: " + res.folio;
 
-<p>
-Número de despacho:
-</p>
+        const enlace = document.createElement("a");
+        enlace.href = res.pdfUrl;
+        enlace.target = "_blank";
+        enlace.rel = "noopener noreferrer";
+        enlace.textContent = "📄 ABRIR PDF";
 
-<h1>
-${res.numeroDespacho}
-</h1>
+        tarjeta.append(titulo, numero, folio, enlace);
+        resultado.appendChild(tarjeta);
 
+        limpiarFormulario();
 
-<p>
-Folio:
-</p>
+    } catch (error) {
+        console.error("Error al guardar el despacho:", error);
 
-<h2>
-${res.folio}
-</h2>
+        resultado.textContent =
+            "❌ No se pudo completar el proceso: " +
+            error.message +
+            " Revisa la planilla antes de volver a guardar, " +
+            "porque los datos podrían haberse registrado.";
 
-
-</div>
-
-`;
-
-
-
-setTimeout(()=>{
-
-    limpiarFormulario();
-
-},3000);
-
-
-
-});
-
-
-
-}catch(error){
-
-    alert(error.message);
-
+    } finally {
+        boton.disabled = false;
+        boton.textContent = "GUARDAR DESPACHO";
+    }
 }
-
-
-
-}
-
-
-
-
-
-
 
 
 function valor(id){
