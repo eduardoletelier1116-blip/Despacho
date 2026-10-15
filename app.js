@@ -446,85 +446,92 @@ archivo
 
 
 
-function iniciarFirma(){
+function iniciarFirma() {
+    canvas = document.getElementById("firma");
+    ctx = canvas.getContext("2d");
 
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
 
-canvas =
-document.getElementById(
-"firma"
-);
+    // Evita que la pantalla se desplace mientras firmas.
+    canvas.style.touchAction = "none";
 
-
-ctx =
-canvas.getContext("2d");
-
-
-canvas.width =
-canvas.offsetWidth;
-
-
-canvas.height =
-canvas.offsetHeight;
-
-
-
-canvas.onmousedown=iniciar;
-
-canvas.onmousemove=dibujar;
-
-canvas.onmouseup=terminar;
-
-
+    // Reconoce mouse, dedo y lápiz táctil.
+    canvas.addEventListener("pointerdown", iniciar);
+    canvas.addEventListener("pointermove", dibujar);
+    canvas.addEventListener("pointerup", terminar);
+    canvas.addEventListener("pointercancel", terminar);
+    canvas.addEventListener("lostpointercapture", terminar);
 }
 
+let punteroFirma = null;
 
+function posicionFirma(evento) {
+    const rect = canvas.getBoundingClientRect();
 
-function iniciar(e){
+    return {
+        x: (
+            evento.clientX - rect.left - canvas.clientLeft
+        ) * canvas.width / canvas.clientWidth,
 
-dibujando=true;
-
-ctx.beginPath();
-
-ctx.moveTo(
-e.offsetX,
-e.offsetY
-);
-
+        y: (
+            evento.clientY - rect.top - canvas.clientTop
+        ) * canvas.height / canvas.clientHeight
+    };
 }
 
+function iniciar(evento) {
+    if (!evento.isPrimary || evento.button !== 0) return;
+    if (punteroFirma !== null) return;
 
+    evento.preventDefault();
 
-function dibujar(e){
+    punteroFirma = evento.pointerId;
+    dibujando = true;
 
+    canvas.setPointerCapture(evento.pointerId);
 
-if(!dibujando)return;
+    const punto = posicionFirma(evento);
 
+    ctx.lineWidth = 3;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = "#000000";
+    ctx.fillStyle = "#000000";
 
-ctx.lineWidth=3;
+    // Permite registrar también un toque corto.
+    ctx.beginPath();
+    ctx.arc(punto.x, punto.y, 1.5, 0, Math.PI * 2);
+    ctx.fill();
 
-ctx.lineCap="round";
-
-
-ctx.lineTo(
-e.offsetX,
-e.offsetY
-);
-
-
-ctx.stroke();
-
-
+    ctx.beginPath();
+    ctx.moveTo(punto.x, punto.y);
 }
 
+function dibujar(evento) {
+    if (!dibujando || evento.pointerId !== punteroFirma) {
+        return;
+    }
 
+    evento.preventDefault();
 
-function terminar(){
+    const punto = posicionFirma(evento);
 
-dibujando=false;
-
+    ctx.lineTo(punto.x, punto.y);
+    ctx.stroke();
 }
 
+function terminar(evento) {
+    if (evento.pointerId !== punteroFirma) return;
 
+    dibujando = false;
+    punteroFirma = null;
+    ctx.closePath();
+
+    if (canvas.hasPointerCapture(evento.pointerId)) {
+        canvas.releasePointerCapture(evento.pointerId);
+    }
+}
 
 
 function limpiarFirma(){
