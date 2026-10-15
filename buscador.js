@@ -575,3 +575,207 @@
     iniciarBuscador();
   }
 })();
+
+// MENÚ SUPERIOR PARA ABRIR EL BUSCADOR
+(() => {
+  function prepararMenuBuscador() {
+    const buscador = document.getElementById("buscador-despachos");
+
+    if (!buscador || document.getElementById("menu-buscador")) {
+      return;
+    }
+
+    // Ocultar el buscador al ingresar.
+    buscador.style.display = "none";
+
+    const menu = document.createElement("div");
+    menu.id = "menu-buscador";
+
+    // Estilos separados del resto de la aplicación.
+    const raiz = menu.attachShadow({ mode: "open" });
+
+    raiz.innerHTML = `
+      <style>
+        :host {
+          position: fixed;
+          top: 14px;
+          right: 14px;
+          z-index: 1000;
+          font-family: "Segoe UI", Arial, sans-serif;
+        }
+
+        * {
+          box-sizing: border-box;
+        }
+
+        #abrirMenu {
+          width: 48px;
+          height: 48px;
+          border: none;
+          border-radius: 12px;
+          background: #55851d;
+          color: white;
+          font-size: 28px;
+          cursor: pointer;
+          box-shadow: 0 3px 10px rgba(0,0,0,.18);
+        }
+
+        #opciones {
+          position: absolute;
+          top: 58px;
+          right: 0;
+          width: 190px;
+          padding: 8px;
+          background: white;
+          border: 1px solid #e1e7e1;
+          border-radius: 14px;
+          box-shadow: 0 6px 20px rgba(0,0,0,.16);
+        }
+
+        #opciones[hidden] {
+          display: none;
+        }
+
+        #irBuscador {
+          width: 100%;
+          padding: 14px;
+          border: none;
+          border-radius: 9px;
+          background: white;
+          color: #35454e;
+          text-align: left;
+          font-size: 16px;
+          font-weight: bold;
+          cursor: pointer;
+        }
+
+        #irBuscador:hover {
+          background: #edf6e5;
+          color: #55851d;
+        }
+
+        button:focus-visible {
+          outline: 3px solid #79b82a;
+          outline-offset: 3px;
+        }
+      </style>
+
+      <button
+        id="abrirMenu"
+        type="button"
+        aria-label="Abrir menú"
+        aria-expanded="false"
+        aria-controls="opciones"
+      >☰</button>
+
+      <div id="opciones" hidden>
+        <button id="irBuscador" type="button">
+          🔎 Buscador
+        </button>
+      </div>
+    `;
+
+    document.body.appendChild(menu);
+
+    const botonMenu = raiz.getElementById("abrirMenu");
+    const opciones = raiz.getElementById("opciones");
+    const botonBuscador = raiz.getElementById("irBuscador");
+
+    function cerrarMenu() {
+      opciones.hidden = true;
+      botonMenu.setAttribute("aria-expanded", "false");
+      botonMenu.setAttribute("aria-label", "Abrir menú");
+    }
+
+    botonMenu.addEventListener("click", () => {
+      const abrir = opciones.hidden;
+
+      opciones.hidden = !abrir;
+
+      botonMenu.setAttribute(
+        "aria-expanded",
+        String(abrir)
+      );
+
+      botonMenu.setAttribute(
+        "aria-label",
+        abrir ? "Cerrar menú" : "Abrir menú"
+      );
+    });
+
+    botonBuscador.addEventListener("click", () => {
+      buscador.style.display = "block";
+      buscador.style.scrollMarginTop = "80px";
+
+      cerrarMenu();
+
+      const primerCampo =
+        buscador.shadowRoot?.querySelector("input");
+
+      if (primerCampo) {
+        primerCampo.focus({ preventScroll: true });
+      }
+
+      buscador.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    });
+
+    // Cerrar el menú al tocar fuera.
+    document.addEventListener("click", evento => {
+      if (!evento.composedPath().includes(menu)) {
+        cerrarMenu();
+      }
+    });
+
+    // Cerrar el menú con la tecla Escape.
+    document.addEventListener("keydown", evento => {
+      if (evento.key === "Escape" && !opciones.hidden) {
+        cerrarMenu();
+        botonMenu.focus();
+      }
+    });
+
+    // Agregar un botón para volver a ocultar el buscador.
+    const interior = buscador.shadowRoot;
+
+    if (interior) {
+      const tarjeta = interior.querySelector(".tarjeta, .panel");
+
+      if (tarjeta) {
+        const cerrarBuscador = document.createElement("button");
+
+        cerrarBuscador.type = "button";
+        cerrarBuscador.textContent = "✕ Cerrar buscador";
+        cerrarBuscador.style.cssText = `
+          display: block;
+          margin: 0 0 14px auto;
+          padding: 9px 12px;
+          border: none;
+          border-radius: 8px;
+          background: #edf2f4;
+          color: #35454e;
+          font-size: 13px;
+          cursor: pointer;
+        `;
+
+        cerrarBuscador.addEventListener("click", () => {
+          buscador.style.display = "none";
+          botonMenu.focus({ preventScroll: true });
+        });
+
+        tarjeta.prepend(cerrarBuscador);
+      }
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener(
+      "DOMContentLoaded",
+      prepararMenuBuscador
+    );
+  } else {
+    prepararMenuBuscador();
+  }
+})();
