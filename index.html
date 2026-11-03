@@ -317,7 +317,70 @@ class="resultado">
 
 
 
+<style>
+  .opciones-foto {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 8px 0;
+  }
 
+  .opciones-foto button {
+    padding: 11px 14px;
+    border: 1px solid #55851d;
+    border-radius: 10px;
+    background: white;
+    color: #406718;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .opciones-foto button:first-child {
+    background: #55851d;
+    color: white;
+  }
+
+  /* El campo sigue mostrando el nombre del archivo seleccionado. */
+  .archivo-despacho::file-selector-button {
+    display: none;
+  }
+</style>
+
+<script>
+  ["foto1", "foto2", "foto3"].forEach(function (id, indice) {
+    const campo = document.getElementById(id);
+    if (!campo) return;
+
+    campo.removeAttribute("capture");
+    campo.classList.add("archivo-despacho");
+    campo.setAttribute("aria-label", "Archivo de la foto " + (indice + 1));
+
+    const opciones = document.createElement("div");
+    opciones.className = "opciones-foto";
+
+    const camara = document.createElement("button");
+    camara.type = "button";
+    camara.textContent = "📷 Tomar foto";
+
+    const galeria = document.createElement("button");
+    galeria.type = "button";
+    galeria.textContent = "🖼️ Elegir de la galería";
+
+    camara.addEventListener("click", function () {
+      campo.setAttribute("capture", "environment");
+      campo.click();
+    });
+
+    galeria.addEventListener("click", function () {
+      campo.removeAttribute("capture");
+      campo.click();
+    });
+
+    opciones.append(camara, galeria);
+    campo.before(opciones);
+  });
+</script>
 <script src="app.js?v=3"></script>
 <script src="buscador.js?v=2"></script>
 
